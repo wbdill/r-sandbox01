@@ -48,9 +48,10 @@ counts <- yt %>%
   group_by(channel_title) %>%
   summarize(vid_cnt = n())
 
+#---------- histogram of views by channel----------------------------------------------
 hist(counts$vid_cnt, breaks =  20, xlab = "# of videos", main = "Videos Per Channel")
 
-#---------- histogram of views by channel----------------------------------------------
+#----- top channels based on total views -------------------------------
 channels %>% 
   select(channel_title, tot_views) %>%
   arrange(desc(tot_views)) %>%
