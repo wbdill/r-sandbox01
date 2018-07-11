@@ -27,29 +27,29 @@ babynames %>% filter(name %in% c("Brian", "Ryan"), sex == "M", year > 1950) %>%
 
 #Brian vs Tina
 babynames %>% filter( (name == "Brian" & sex == "M") | (name == "Tina" & sex == "F"), year > 1920) %>%
-  ggplot(aes(year, n)) + 
+  ggplot(aes(year, n/1000)) + 
   geom_line() +
-  labs(y = "Number of Births", title = "Births") +
+  labs(y = "Number of Births (thousands)", title = "Births") +
   facet_grid(name~.)
 
 #Steve vs Beth
 babynames %>% filter( (name == "Steve" & sex == "M") | (name == "Beth" & sex == "F"), year > 1920) %>%
-  ggplot(aes(year, n)) + 
+  ggplot(aes(year, n/1000)) + 
   geom_line() +
-  labs(y = "Number of Births", title = "Births") +
+  labs(y = "Number of Births (thousands)", title = "Births") +
   facet_grid(name~.)
 
 babynames %>% filter( (name %in% c("Brian", "Steve") & sex == "M") | (name %in% c("Beth", "Tina") & sex == "F"), year > 1920) %>%
-  ggplot(aes(year, n)) + 
+  ggplot(aes(year, n/1000)) + 
   geom_line(aes(color = name)) +
-  labs(x = "Year", y = "Number of Births", title = "Births")
+  labs(x = "Year", y = "Number of Births (thousands)", title = "Births")
 
 
 
 babynames %>% filter( (name %in% c("Brian","William","Robert") & sex == "M") | (name %in% c("Catherine","Caitlyn","Tina") & sex == "F"), year > 1940) %>%
-  ggplot(aes(year, n)) + 
+  ggplot(aes(year, n/1000)) + 
   geom_line(aes(color=name)) +
-  labs(y = "Number of Births", title = "Births") +
+  labs(y = "Number of Births (thousands)", title = "Births") +
   scale_y_log10()
 
 babynames %>% filter(name %in% c("Caitlyn","Tina"), sex == "F") %>%
