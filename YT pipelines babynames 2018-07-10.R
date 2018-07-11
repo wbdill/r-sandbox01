@@ -10,7 +10,6 @@ babynames <- tbl_df(babynames)
 babynames
 babynames %>% select(-prop)
 
-#----- graphs of baby names over time -----
 #----- bunch of graphs of baby names over time -----
 var_name <- "Steve"
 ctitle <- paste("Babies Born Named", var_name)
