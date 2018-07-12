@@ -11,14 +11,14 @@ babynames <- tbl_df(babynames)
 babynames
 babynames %>% select(-prop)
 
-<<<<<<< HEAD
+
 #----- graphs of baby names over time -----
 ylbl = "Number of Births (thousands)"
 var_name <- "William"
-=======
+
 #----- bunch of graphs of baby names over time -----
 var_name <- "Steve"
->>>>>>> 9c8f85916fb5e6ca86c803f9fe475f1ec851a23d
+
 ctitle <- paste("Babies Born Named", var_name)
 babynames %>% filter(name == var_name, sex == "M", year > 1880) %>%
   ggplot(aes(year, n/1000)) + 
