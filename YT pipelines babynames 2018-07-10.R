@@ -66,20 +66,19 @@ babynames %>%
   facet_grid(name~.)
 
 
-<<<<<<< HEAD
 #----- Top male baby names by proportion -----
 baby_prop <- babynames %>% 
   filter(sex == "M") %>%
   group_by(year) %>%
   arrange(desc(prop)) %>%
   top_n(1) %>%
-=======
+
 #----- Top male names by proportion -----
 baby_prop <- babynames %>% 
   group_by(year, sex) %>%
   mutate(rank = min_rank(desc(prop))) %>%
   filter(rank == 1) %>%
->>>>>>> 9c8f85916fb5e6ca86c803f9fe475f1ec851a23d
+
   ungroup()
 
 baby_prop %>% distinct(name)
