@@ -13,12 +13,13 @@ babynames %>% select(-prop)
 
 #----- graphs of baby names over time -----
 ylbl = "Number of Births (thousands)"
-var_name <- "Steve"
+var_name <- "William"
 ctitle <- paste("Babies Born Named", var_name)
-babynames %>% filter(name == var_name, sex == "M", year > 1800) %>%
+babynames %>% filter(name == var_name, sex == "M", year > 1880) %>%
   ggplot(aes(year, n/1000)) + 
   geom_line() +
-  labs(x = "Year", y = ylbl, title = ctitle)
+  labs(x = "Year", y = ylbl, title = ctitle) +
+  scale_x_continuous(breaks = seq(1880, 2020, 10))
 
 #Brian vs Ryan
 babynames %>% filter(name %in% c("Brian", "Ryan"), sex == "M", year > 1950) %>%
@@ -29,17 +30,15 @@ babynames %>% filter(name %in% c("Brian", "Ryan"), sex == "M", year > 1950) %>%
 
 #Brian vs Tina
 babynames %>% filter( (name == "Brian" & sex == "M") | (name == "Tina" & sex == "F"), year > 1920) %>%
-  ggplot(aes(year, n/1000)) + 
+  ggplot(aes(year, n/1000, col = name)) + 
   geom_line() +
-  labs(y = ylbl, title = "Births") +
-  facet_grid(name~.)
+  labs(y = ylbl, title = "Births")
 
 #Steve vs Beth
 babynames %>% filter( (name == "Steve" & sex == "M") | (name == "Beth" & sex == "F"), year > 1920) %>%
-  ggplot(aes(year, n/1000)) + 
+  ggplot(aes(year, n/1000, col = name)) + 
   geom_line() +
-  labs(y = ylbl, title = "Births") +
-  facet_grid(name~.)
+  labs(y = ylbl, title = "Births")
 
 babynames %>% filter( (name %in% c("Brian", "Steve") & sex == "M") | (name %in% c("Beth", "Tina") & sex == "F"), year > 1920) %>%
   ggplot(aes(year, n/1000)) + 
@@ -132,4 +131,12 @@ tot_by_year %>% ggplot(aes(x=year, y=total/1000000)) + geom_line() +
   labs(y = "Births (Million)", title="Births By Year")
 
 #----- foo -----
-#----- bar -----
+
+#----- Setting additional specific axis tick marks -----
+#https://stackoverflow.com/questions/51019320/r-ggplot2-setting-additional-specific-axis-tick-marks
+df <- data.frame(y = c(1,2,3), x=c(1,2,3))
+
+pretty_br <- pretty(df$x)[abs(pretty(df$x) - 1.5) > 0.25]
+ggplot(df, aes(x, y)) + 
+  geom_line() +
+  scale_x_continuous(breaks = c(pretty_br, 1.5), labels = c(pretty_br, 'hi'))
