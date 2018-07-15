@@ -142,8 +142,6 @@ mfpct %>% ggplot( aes(x=year, y=pct, color=sex)) +
 tot_by_year %>% ggplot(aes(x=year, y=total/1000000)) + geom_line() +
   labs(y = "Births (Million)", title="Births By Year")
 
-#----- foo -----
-
 #----- Setting additional specific axis tick marks -----
 #https://stackoverflow.com/questions/51019320/r-ggplot2-setting-additional-specific-axis-tick-marks
 df <- data.frame(y = c(1,2,3), x=c(1,2,3))
