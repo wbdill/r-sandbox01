@@ -22,6 +22,7 @@ library(janeaustenr)
 library(dplyr)
 library(stringr)
 library(tidyr)
+library(tidytext)
 
 
 
@@ -41,9 +42,55 @@ write.csv(warpeace, "D:/data/R/war_and_peace.csv")
 # Save an object to a file
 saveRDS(warpeace, file = "D:/data/R/war_and_peace.rds")
 # Restore the object
-mydata <- readRDS(file = "D:/data/R/war_and_peace.rds")
+warpeace <- readRDS(file = "D:/data/R/war_and_peace.rds")
 
 #-------------------------------------------------------------------------------
+original_books <- warpeace %>%
+  mutate(linenumber = row_number(),
+         chapter = cumsum(str_detect(text, regex("^chapter [\\divxlc]",
+                                                 ignore_case = TRUE)))) %>%
+  ungroup()
+
+original_books
+
+library(tidytext)
+tidy_books <- original_books %>%
+  unnest_tokens(word, text)
+
+tidy_books
+
+data(stop_words)
+
+tidy_books <- tidy_books %>%
+  anti_join(stop_words)
+
+tidy_books %>% 
+  inner_join(get_sentiments("bing"))
+#----- apply a lexicon sentiment -----
+sbooks <- tidy_books %>% inner_join(get_sentiments("bing"))
+
+swordcounts <- sbooks %>%
+  group_by(word, sentiment) %>%
+  summarize(n = n()) %>%
+  ungroup() %>%
+  top_n(20, n)
+
+ggplot(swordcounts, aes(reorder(word, n), n, fill=sentiment)) +
+  geom_col() +
+  coord_flip() +
+  labs(x = "Word", y = "Frequency", title="War and Peace")
+  
+
+#----- total negative vs positive -----
+sbooks %>%
+  group_by(word, sentiment) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n)) %>%
+  spread(sentiment, n) %>%
+  ungroup() %>%
+  summarize(tot_neg = sum(negative, na.rm = TRUE),
+            tot_pos = sum(positive, na.rm = TRUE))
+
 
 #-------------------------------------------------------------------------------
 

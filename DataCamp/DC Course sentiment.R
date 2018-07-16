@@ -50,3 +50,8 @@ tidy_shakespeare %>%
   spread(sentiment, n, fill = 0) %>%
   # Use mutate to find net sentiment
   mutate(sentiment = positive - negative)
+
+
+#-------------------------------------------------------------------------------
+# news
+#-------------------------------------------------------------------------------
