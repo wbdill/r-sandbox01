@@ -1,4 +1,6 @@
 # ----- DataCamp - sentiment analysis -----
+# http://www.tidytextmining.com
+
 install.packages("tidyverse")
 install.packages("tidytext")
 install.packages("syuzhet")     # lexicons
@@ -158,3 +160,25 @@ lyric_sentiment2 %>%
          year = 10 * floor(year / 10)) %>%
   ggplot(aes(as.factor(year), percent)) + 
   geom_boxplot()
+
+#----- modeling negative sentiment -----
+negative_by_year <- lyric_sentiment2 %>%
+  filter(sentiment == "negative", total_words > 5) %>%
+  count(song, year, total_words) %>%
+  ungroup() %>%
+  mutate(percent = n / total_words)
+
+model_negative <- lm(percent ~ year, data = negative_by_year)
+
+summary(model_negative)
+
+#----- modeling positive sentiment -----
+positive_by_year <- lyric_sentiment2 %>%
+  filter(sentiment == "positive", total_words > 5) %>%
+  count(song, year, total_words) %>%
+  ungroup() %>%
+  mutate(percent = n / total_words)
+
+model_positive <- lm(percent ~ year, data = positive_by_year)
+
+summary(model_positive)
