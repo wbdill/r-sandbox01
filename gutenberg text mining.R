@@ -28,8 +28,10 @@ gutenberg_metadata %>%
 
 # ----- download from gutenberg -----
 twain_book_data <- gutenberg_download(c(74, 76, 86, 245, 3177, 8525))
+
 # save locally so we don't have to re-download it in future R sessions
 saveRDS(twain_book_data, "C:/Data/R/twain_book_data.rds")
+#twain_book_data <- readRDS("C:/Data/R/twain_book_data.rds")
 
 head(twain_book_data, 15)
 
