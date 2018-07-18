@@ -51,16 +51,16 @@ twain_sentiment_by_index <- twain_tokens %>%
   inner_join(get_sentiments("bing"), by = "word") %>%
   count(gutenberg_id, index = linenum %/% 80, sentiment) %>%
   spread(sentiment, n, fill = 0) %>%
-  mutate(sentiment = positive - negative) %>%
+  mutate(net_sentiment = positive - negative) %>%
   inner_join(twain_books, by = "gutenberg_id")
 
 library(ggplot2)
 
 #graph net sentiment over time (index) for each book
-ggplot(twain_sentiment_by_index, aes(index, sentiment, fill = title)) +
+ggplot(twain_sentiment_by_index, aes(index, net_sentiment, fill = title)) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~title, ncol = 2, scales = "free_x") +
-  labs(title = "Net Sentiment over time per 80 lines of text")
+  labs(title = "Net Sentiment Over Time", x = "1X = 80 lines of text", y = "Net Sentiment")
 
 #----- plot net positive/negative for each book -----
 twain_sentiment <- twain_tokens %>%
