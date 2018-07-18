@@ -6,7 +6,7 @@
 
 library(tidyverse)
 library(tidytext)    # text mining
-library(syuzhet)     # sentiment lexicons.  get_sentiments("bing")
+#library(syuzhet)     # sentiment lexicons.  get_sentiments("bing")
 library(gutenbergr)  # Project Gutenberg downloadable books.  gutenberg_metadata to view index
 #-------------------------------------------------------------------------------
 
@@ -21,13 +21,13 @@ twain_books <- gutenberg_metadata %>%
 
 View(twain_books)
 
-# pick 6 popular books using gutenberg_id
+# pick 6 popular books identified by gutenberg_id
 gutenberg_metadata %>%
-  filter(gutenberg_id %in% c(74, 76, 86, 245, 3177, 8525)) %>%
+  filter(gutenberg_id %in% c(74, 76, 86, 245, 1837, 3177)) %>%
   select(gutenberg_id, title, author, rights)
 
 # ----- download from gutenberg -----
-twain_book_data <- gutenberg_download(c(74, 76, 86, 245, 3177, 8525))
+twain_book_data <- gutenberg_download(c(74, 76, 86, 245, 1837, 3177))
 
 # save locally so we don't have to re-download it in future R sessions
 saveRDS(twain_book_data, "C:/Data/R/twain_book_data.rds")
@@ -40,17 +40,33 @@ twain_book_data <- twain_book_data %>%
   group_by(gutenberg_id) %>%
   mutate(linenum = row_number())
 
-# tokenize
+# tokenize to one word per row
 twain_tokens <- twain_book_data %>%
   unnest_tokens(word, text)    # by word, colname = "text"
-  
+
+#----- Get Twain sentiments and graph net sentiment over time -----
 # inner_join sentiment to score each word
-twain_sent <- twain_tokens %>%
+# create index for every 80 lines, spread to + & - cols and get net sentiment
+twain_sentiment <- twain_tokens %>%
+  inner_join(get_sentiments("bing"), by = "word") %>%
+  count(gutenberg_id, index = linenum %/% 80, sentiment) %>%
+  spread(sentiment, n, fill = 0) %>%
+  mutate(sentiment = positive - negative) %>%
+  inner_join(twain_books, by = "gutenberg_id")
+
+library(ggplot2)
+
+#graph net sentiment over time (index) for each book
+ggplot(twain_sentiment, aes(index, sentiment, fill = title)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~title, ncol = 2, scales = "free_x") +
+  labs(title = "Net Sentiment over time per 80 lines of text")
+
+#----- plot net positive/negative for each book -----
+twain_sentiment <- twain_tokens %>%
   inner_join(get_sentiments("bing"), by = "word")
 
-head(twain_sent)
-
-twain_summary1 <- twain_sent %>%
+twain_summary1 <- twain_sentiment %>%
   group_by(gutenberg_id, word) %>%
   count(word, sentiment) %>%
   arrange(gutenberg_id, desc(n)) %>%
@@ -68,11 +84,11 @@ twain_summary1 <- twain_sent %>%
 head(twain_summary1, 12)
 
 ggplot(twain_summary1, aes( reorder(title, percent), percent, fill = key)) +
-  geom_col() +
+  geom_col(alpha = 0.5) +
   coord_flip()
 
-# top 10 sentiment words (by freq) for each book
-top_10_each_book <- twain_sent %>%
+# ----- top 10 sentiment words (by freq) for each book -----
+top_10_each_book <- twain_sentiment %>%
   group_by(gutenberg_id, word) %>%
   count(word, sentiment) %>%
   arrange(gutenberg_id, desc(n)) %>%
