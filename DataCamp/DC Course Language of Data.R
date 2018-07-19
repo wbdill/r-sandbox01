@@ -1,6 +1,6 @@
 # Data Camp - Language of Data course
 # https://campus.datacamp.com/courses/introduction-to-data/language-of-data?ex=1
-
+library(tidyverse)
 rm(list = ls())
 
 # Types of varaibles
@@ -122,4 +122,5 @@ ggplot(evals, aes(bty_avg, score)) +
 
 ggplot(evals, aes(bty_avg, score, col = cls_type)) +
   geom_jitter() +
-  geom_smooth(se = FALSE)
+  geom_smooth(se = FALSE) +
+  ylim(0,5) + xlim(0,9)
