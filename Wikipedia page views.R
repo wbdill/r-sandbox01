@@ -45,17 +45,10 @@ top_articles %>%
 
 
 #----- Direct plot without intermediate saving -----
-<<<<<<< HEAD
-# , "Drake_(musician)"
 library(lubridate)
-terms = c("Aquaman_(film)","Shazam!_(film)", "Mamma_Mia!_(film)" )
-article_pageviews(project = "en.wikipedia", 
-                  article = terms, 
-=======
 # , "Drake_(musician)"  , "Post_Malone"
 article_pageviews(project = "en.wikipedia", 
                   article = c("Cardi_B", "Drake_(musician)" ), 
->>>>>>> e752fd5203272a1eb0ad51c75dadb56cc74ab91c
                   user_type = "user", 
                   start = "2017060100", 
                   end = "2018100100") %>%
