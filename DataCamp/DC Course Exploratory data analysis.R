@@ -1,4 +1,4 @@
-# DataCamp Course - Exploratory comicsa analysis
+# DataCamp Course - Exploratory data analysis
 # https://www.comicsacamp.com/courses/exploratory-comicsa-analysis
 library(tidyverse)
 
@@ -53,3 +53,43 @@ comics$align <- factor(comics$align,
 ggplot(comics, aes(x = align)) + 
   geom_bar() +
   facet_wrap(~gender)
+
+#----- cars dataset (chapter 2) -----
+cars <- fread("C:/GitHub/r-sandbox01/DataCamp/data/cars04.csv")
+str(cars)
+
+#filter to common cylinders
+common_cyl <- filter(cars, ncyl %in% c(4,6,8))
+
+# Create box plots of city mpg by ncyl
+ggplot(common_cyl, aes(x = as.factor(ncyl), y = city_mpg)) +
+  geom_boxplot()
+
+# Create overlaid density plots for same data
+ggplot(common_cyl, aes(x = city_mpg, fill = as.factor(ncyl))) +
+  geom_density(alpha = .3)
+
+
+cars %>%
+  ggplot(aes(x = horsepwr)) +
+  geom_histogram(binwidth = 30) +
+  ggtitle("Horsepower")
+
+#----- boxplots vs density -----
+cars %>%
+  ggplot(aes(x = 1, y = city_mpg)) +
+  geom_boxplot()
+
+cars %>%
+  ggplot(aes(x = city_mpg)) +
+  geom_density()
+
+#----- multivariate -----
+# facet wrap with labeller set
+common_cyl %>%
+  ggplot(aes(x = hwy_mpg)) +
+  geom_histogram() +
+  facet_grid(ncyl ~ suv, labeller = label_both) +
+  ggtitle("Cylinders and SUV")
+
+#----- Chapter 3 County Demographics -----
