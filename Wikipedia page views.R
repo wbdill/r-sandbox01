@@ -36,19 +36,34 @@ top_articles <- top_articles(project = "en.wikipedia", platform = "all",
 
 write_csv(top_articles, "C:/Data/R/data/wikipedia_top_articles_2018-07-01.csv")
 
+top_articles %>% 
+  filter(str_detect(article, "film")) %>% 
+  select(-1,-2, -4, -5) %>%
+  arrange(desc(views))
+
 
 #----- Direct plot without intermediate saving -----
 # , "Drake_(musician)"
+library(lubridate)
+terms = c("Aquaman_(film)","Shazam!_(film)", "Mamma_Mia!_(film)" )
 article_pageviews(project = "en.wikipedia", 
-                  article = c("Cardi_B", "Post_Malone"), 
+                  article = terms, 
                   user_type = "user", 
-                  start = "2016100100", 
+                  start = "2017060100", 
                   end = "2018100100") %>%
 ggplot(aes(date, views, col=article)) +
   geom_line() +
+  geom_rect(
+    fill="red",alpha=0.5, 
+    mapping=aes_string(x="date", y="views"), 
+    xmin=decimal_date(as.Date(c("2017-11-20"))),
+    xmax=decimal_date(as.Date(c("2017-12-25"))),
+    ymin=-Inf,  ymax=Inf
+  )  +
   scale_y_log10() +
   labs(x = "Date", y = "Views (log10)", title = "Daily Wikipedia Views (en)") +
-  theme(plot.title = element_text(hjust = 0.5, face="bold", size=rel(2.0)))
+  theme(plot.title = element_text(hjust = 0.5, face="bold", size=rel(2.0))) 
+
 
 
 
