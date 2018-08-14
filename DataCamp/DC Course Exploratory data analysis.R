@@ -93,3 +93,44 @@ common_cyl %>%
   ggtitle("Cylinders and SUV")
 
 #----- Chapter 3 County Demographics -----
+install.packages("gapminder")
+library(gapminder)
+?gapminder
+str(gapminder)
+
+gap2007 <- filter(gapminder, year == 2007)
+
+gap2007 %>%
+  group_by(continent) %>%
+  summarize(mean_le = mean(lifeExp),
+            median_le = median(lifeExp))
+gap2007 %>%
+  ggplot(aes(x = continent, y = lifeExp)) +
+  geom_boxplot()
+
+# get measures of spread
+gap2007 %>%
+  group_by(continent) %>%
+  summarize(sd = sd(lifeExp),
+            iqr = IQR(lifeExp),
+            n = n())
+
+# density shows the shape of the data - modality (# of humps)
+gap2007 %>%
+  ggplot(aes(x = lifeExp, fill = continent)) +
+  geom_density(alpha = 0.3)
+
+# population
+gap2007 %>%
+  ggplot(aes(x = pop)) +
+  geom_density()
+
+gap2007 <- gap2007 %>% 
+  mutate(log_pop = log(pop))
+
+#density plot of log_pop shows clear unimodal distribution
+gap2007 %>%
+  ggplot(aes(x = log_pop)) +
+  geom_density()
+
+#----- Chapter 4 Email -----
