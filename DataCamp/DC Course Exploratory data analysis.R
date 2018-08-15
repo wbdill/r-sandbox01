@@ -134,3 +134,43 @@ gap2007 %>%
   geom_density()
 
 #----- Chapter 4 Email -----
+library(openintro)
+?email
+email$spam <- as.factor(email$spam)
+str(email)
+# Compute summary statistics
+email %>%
+  group_by(spam) %>%
+  summarize(median(num_char),
+            IQR(num_char))
+email %>%
+  mutate(log_num_char = log(num_char)) %>%
+  ggplot(aes(x = spam, y = log_num_char)) +
+  geom_boxplot()
+
+email %>%
+  group_by(spam) %>%
+  summarize(median(exclaim_mess),
+            IQR(exclaim_mess),
+            n())
+
+#----- email spam plots -----
+email %>%
+  group_by(spam) %>%
+  mutate(log_exclaim = log(exclaim_mess + .01)) %>%
+  ggplot(aes(x = spam, y = log_exclaim)) +
+  geom_boxplot()
+
+email %>%
+  group_by(spam) %>%
+  mutate(log_exclaim = log(exclaim_mess + .01)) %>%
+  ggplot( aes(log_exclaim)) +
+  geom_histogram() +
+  facet_wrap(~spam)
+
+email %>%
+  group_by(spam) %>%
+  mutate(log_exclaim = log(exclaim_mess + .01)) %>%
+  ggplot(aes(x = log_exclaim, fill = spam)) +
+  geom_density(alpha = 0.3)
+
