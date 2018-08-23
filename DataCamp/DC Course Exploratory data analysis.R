@@ -174,3 +174,25 @@ email %>%
   ggplot(aes(x = log_exclaim, fill = spam)) +
   geom_density(alpha = 0.3)
 
+# collapse the tail of msgs w/ images into a single category with mutate
+table(email$image)
+email %>%
+  mutate(has_image = image > 0) %>%
+  ggplot(aes(x = has_image, fill = spam)) +
+  geom_bar(position = "fill")   #position = "fill|dodge|identity)
+
+# compare image and attach.  Do any emails have image > attach?
+sum(email$image != email$attach)
+sum(email$image > email$attach)
+email %>%
+  filter(email$image != email$attach) %>%
+  select(image, attach)
+
+
+# Reorder levels
+email$number <- factor(email$number, levels = c("none", "small", "big"))
+
+# Construct plot of number
+ggplot(email, aes(x = number)) +
+  geom_bar() +
+  facet_wrap(~spam, labeller = label_both)
