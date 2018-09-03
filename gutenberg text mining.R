@@ -9,7 +9,7 @@ library(tidytext)    # text mining
 #library(syuzhet)     # sentiment lexicons.  get_sentiments("bing")
 library(gutenbergr)  # Project Gutenberg downloadable books.  gutenberg_metadata to view index
 #-------------------------------------------------------------------------------
-
+rm(list = ls())
 gutenberg_metadata # listing of all gutenberg books to get their gutenberg_id
 
 
@@ -119,7 +119,7 @@ dickens_tokens <- dickens_book_data %>%
   mutate(linenum = row_number()) %>%
   unnest_tokens(word, text)    # by word, colname = "text"
   
-#----- Get Twain sentiments and graph net sentiment over time -----
+#----- Get sentiments and graph net sentiment over time -----
 # inner_join sentiment to score each word
 # create index for every 80 lines, spread to + & - cols and get net sentiment
 dickens_sentiment_by_index <- dickens_tokens %>%
