@@ -155,6 +155,7 @@ email %>%
             n())
 
 #----- email spam plots -----
+#log(0) = -Inf, so add .01 before log to aleviate this
 email %>%
   group_by(spam) %>%
   mutate(log_exclaim = log(exclaim_mess + .01)) %>%
