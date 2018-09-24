@@ -2,6 +2,7 @@
 library(broom)
 library(tidyverse)
 
+rm(list = ls())
 head(mtcars)
 
 #----- plot weight and mpg  -----
