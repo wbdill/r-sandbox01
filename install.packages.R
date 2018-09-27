@@ -17,3 +17,10 @@ install.packages("gutenbergr")  # project Gutenberg book downloads
 
 # https://rmarkdown.rstudio.com/lesson-1.html
 install.packages("formatR", repos = "http://cran.rstudio.com")
+
+
+# https://www.stat.pitt.edu/stoffer/tsa4/xChanges.htm
+# https://www.stat.pitt.edu/stoffer/tsa4/
+# https://www.rdocumentation.org/packages/astsa/versions/1.8/topics/astsa-package
+install.packages("devtools")     # only need to do this once
+devtools::install_github("nickpoison/astsa")  # time series analysis
