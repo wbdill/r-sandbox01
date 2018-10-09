@@ -1,5 +1,6 @@
 # https://campus.datacamp.com/courses/working-with-data-in-the-tidyverse/
 install.packages("skimr")
+library(tidyverse)
 library(readr)
 library(skimr)
 rm(list = ls())
