@@ -2,7 +2,7 @@
 # Professor Talithia Williams
 
 # Harman23.cor1
-
+rm(list = ls())
 library(datasets)
 data("Harman23.cor")
 round(Harman23.cor$cov,2)
@@ -143,3 +143,60 @@ shapiro.test(MA100)
 shapiro.test(MA200)
 
 # Central Limit Theory: sample means of any distribution approach normal distribution as sample size increases.
+# need at least 30-40 samples.
+
+#----- Lesson 9: Point Esimates and Standard Error -----
+library(datasets)
+library(ggplot2)
+data("Orange")
+Orange
+
+plot(Orange$age, Orange$circumference)
+ggplot(Orange, aes(age, circumference)) +
+  geom_point() +
+  geom_smooth()
+
+data("women")
+women
+plot(women$height, women$weight)
+ggplot(women, aes(height, weight)) + geom_point() + geom_smooth()
+
+#----- mean vs median as an estimate.  Mean is more efficient b/c it gets closer to population statistic.
+set.seed(1234)
+x = cbind(rnorm(100,0,1),rnorm(100,0,1),rnorm(100,0,1), 
+          rnorm(100,0,1),rnorm(100,0,1),rnorm(100,0,1), rnorm(100,0,1),
+          rnorm(100,0,1),rnorm(100,0,1), rnorm(100,0,1))
+x
+apply(x,2,'mean')  # apply function 'mean' to columns of matrix x.  (1 means rows, 2 means columns. see ?apply)
+apply(x,2,'median')
+
+round(mean(apply(x,2,'mean')),3)
+round(mean(apply(x,2,'median')),3)
+round(var(apply(x,2,'mean')),3)
+round(var(apply(x,2,'median')),3)
+
+#----- Lesson 10: Interval Estimates and Confidence Intervals -----
+
+# simulate a population of 10,000 so we can know the actual population mean and sd.
+set.seed(343) 
+milk = 129-rexp(100000,0.95)
+hist(milk, main="Histogram of Milk Population", col="red")
+
+true_mean = mean(milk)
+true_sd = sd(milk)
+
+# sample from that simulated population to see how well the samples do against the known population stats.
+set.seed(343)
+sample_milk = sample(milk, size=50, rep = T)  # rep = T means sample with replacement
+sample_mean = mean(sample_milk)
+sample_mean
+sample_mean - true_mean
+
+# calculate 95% confidence interval (Z alpha/2 = 1.96)
+n = 50
+sample_mean - 1.96 * sd(sample_milk) / sqrt(n)  # lower
+sample_mean + 1.96 * sd(sample_milk) / sqrt(n)
+
+boxplot(milk, sample_milk)
+
+#----- Lesson 11: Hypothesis Testing: 1 sample
