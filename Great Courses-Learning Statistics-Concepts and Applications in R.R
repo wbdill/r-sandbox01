@@ -199,4 +199,108 @@ sample_mean + 1.96 * sd(sample_milk) / sqrt(n)
 
 boxplot(milk, sample_milk)
 
-#----- Lesson 11: Hypothesis Testing: 1 sample
+#----- Lesson 11: Hypothesis Testing: 1 sample -----
+
+#----- Lesson 12: Hypothesis Testing: 2 samples, paired test -----
+library(ggplot2)
+library(tidyverse)
+data(chickwts)
+summary(chickwts)
+glimpse(chickwts)
+ggplot(chickwts, aes(x = feed, y = weight)) + geom_boxplot()
+
+meat = chickwts[chickwts$feed == "meatmeal", 1]
+horse = chickwts[chickwts$feed == "horsebean", 1]
+meat
+horse
+boxplot(meat, horse)
+
+# manual T-test (Welch's T-test aka student's test) (assumes independent sample data  - not paired)
+mean.meat = mean(meat)
+mean.horse = mean(horse)
+sd.meat = sd(meat)/sqrt(length(meat))
+sd.horse = sd(horse)/sqrt(length(horse))
+T.stat = (mean.meat - mean.horse)/sqrt(sd.meat^2+sd.horse^2)
+T.stat
+
+# built-in t.test function in R
+?t.test
+t.test(meat, horse)
+
+# Paired t-test (dependent sample data)
+install.packages("PairedData")
+library(PairedData)
+data(IceSkating)
+attach(IceSkating)
+IceSkating
+?PairedData
+
+summary(IceSkating)
+
+qqplot(Extension, Flexion, xlim=c(1.5, 2.5), ylim=c(1.5, 2.5), pch=20, cex=2)
+abline(a=0, b=1, lwd=3, col="red")
+
+with(IceSkating,plot(paired(Extension,Flexion), type="McNeil")) # 
+
+with(IceSkating, qqnorm(Extension-Flexion))
+with(IceSkating, qqline(Extension-Flexion))
+
+shapiro.test(Extension-Flexion)
+
+t.test(Extension, Flexion, paired = TRUE)
+
+
+# what if the diff b/t pairs are not normal?  Don't use t-test.
+# use Wilcoxon signed-rank test.  It doesn't depend on data being normal.
+wilcox.test(Extension, Flexion, paired=TRUE)
+
+#----- Lesson 13: Linear Regression Models and assumptions -----
+# explanatory / predictor / independent variable X
+#               response  / dependent variable Y
+# lm assumptions: 
+# 1) Normality (check with qqplot of residuals)
+# 2) Constant variability (no pattern in plot of residuals - homoscedacity)
+# 3) Indepenence
+# 4) Linearity (check with basic scatter plot)
+
+rainfall = c(3.07, 3.55,3.9,4.38,4.79,5.3,5.42,5.99,6.45,6.77)
+wheat = c(78,82,85,91,92,96,97,104,111,119)
+summary(cbind(rainfall, wheat))
+plot(rainfall, wheat)
+
+wheat.mod <- lm(wheat ~ rainfall)
+summary(wheat.mod)
+
+plot(rainfall, wheat, pch=20, xlim = c(0,8), ylim = c(0,120))
+abline(wheat.mod, lw = 3, col="red")
+
+newdf <- data.frame(rainfall = c(5, 6, 6.25))
+predict(wheat.mod, newdf)
+
+# plot the residuals
+plot(rainfall, residuals(wheat.mod))
+abline(0,0, lw = 3, col="red")
+
+# qqplot to get a visual of normality
+qqnorm(residuals(wheat.mod))
+qqline(residuals(wheat.mod), lwd=2, col="Blue")
+
+# 3 deadly statistical sins:
+# 1. Failure to randomize
+# 2. "Accept" the alternative
+# 3. Extrapolating (interpolating OK)
+
+#----- Lesson 14: Regression Predictions, Confidence Intervals -----
+
+
+#----- Lesson 15:  -----
+#----- Lesson 16:  -----
+#----- Lesson 17:  -----
+#----- Lesson 18:  -----
+#----- Lesson 19:  -----
+#----- Lesson 20:  -----
+#----- Lesson 21:  -----
+#----- Lesson 22:  -----
+#----- Lesson 23:  -----
+#----- Lesson 24:  -----
+
