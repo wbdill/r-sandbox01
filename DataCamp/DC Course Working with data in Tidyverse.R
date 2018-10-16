@@ -70,3 +70,8 @@ desserts2 <- desserts %>%
   mutate(tech_win = recode(technical, `1` = 1,
                            .default = 0))
 
+# Tidy data like:  baker score_1 score_2 score_3  guess_1 guess_2 guess_3
+data %>%
+  gather(key = "key", value = "value", score_1:guess_3) %>%
+  separate(key, into = c("var", "order"), convert = TRUE) %>%
+  spread(var, value)
