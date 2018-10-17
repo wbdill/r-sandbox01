@@ -291,9 +291,31 @@ qqline(residuals(wheat.mod), lwd=2, col="Blue")
 # 3. Extrapolating (interpolating OK)
 
 #----- Lesson 14: Regression Predictions, Confidence Intervals -----
+summary(mtcars)
+plot(mpg ~ wt, data=mtcars)
+mpg_model = lm(mpg ~ wt, data = mtcars)
+summary(mpg_model)
 
+plot(mtcars$mpg, residuals(mpg_model))
+abline(0,0, lw = 3, col="red")
 
-#----- Lesson 15:  -----
+qt(.975, df=28)  #quantiles of the t-distribution
+# result: 2.0484
+# std error from lm = 0.5591
+# slope from lm = -5.3445
+# -5.3445 +/- 2.0484 * 0.5591 = -4.1992 to -6.5987
+# 95% sure that slope is b/t -4.1992 and -6.5987
+
+# percentile of the t-distribution
+pt(-9.559, df=28)  # = 1.29e-10 = Pr(>|t|) from sumary(mpg_model)
+
+hist(mpg_model$residuals)
+qqnorm(mpg_model$residuals)
+qqline(mpg_model$residuals)
+
+shapiro.test(mpg_model$residuals)  # p-value 0.1044 so residuals are NOT normal
+
+#----- Lesson 15: Multiple Linear Regression -----
 #----- Lesson 16:  -----
 #----- Lesson 17:  -----
 #----- Lesson 18:  -----
