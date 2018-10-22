@@ -316,7 +316,78 @@ qqline(mpg_model$residuals)
 shapiro.test(mpg_model$residuals)  # p-value 0.1044 so residuals are NOT normal
 
 #----- Lesson 15: Multiple Linear Regression -----
-#----- Lesson 16:  -----
+library(tidyverse)
+library(skimr)
+install.packages("MASS")
+library(MASS)
+data(Pima.tr)
+head(Pima.tr)
+
+glimpse(Pima.tr)
+skim(Pima.tr)
+ggplot(Pima.tr, aes(age, npreg)) + geom_jitter() + geom_smooth()
+
+pairs(Pima.tr[1:4])
+pairs(Pima.tr[5:8])
+
+round(cor(Pima.tr[1:7]), 2)  # correlation matrix
+
+lm1 <- lm(bmi~npreg + glu + bp + skin + ped + age + type, data = Pima.tr)
+summary(lm1)
+# p-value over .05 or .1 means that variable is not significant in the model.
+
+lm2 <- lm(bmi~npreg + glu + bp + skin + ped + age + type, data = Pima.tr)
+drop1(lm2, test = "F")
+# npreg has highest p-value, so drop it
+
+lm2 <- lm(bmi~glu + bp + skin + ped + age + type, data = Pima.tr)
+drop1(lm2, test="F")
+
+# glu has highest p-value so drop it
+lm2 <- lm(bmi~bp + skin + ped + age + type, data = Pima.tr)
+drop1(lm2, test="F")
+
+lm2 <- lm(bmi~skin + ped + age + type, data = Pima.tr)
+drop1(lm2, test="F")
+
+lm2 <- lm(bmi~skin + ped + type, data = Pima.tr)
+drop1(lm2, test="F")
+
+
+#-----
+lm3 <- lm(glu~bmi+npreg+bp+skin+ped+age+type, data = Pima.tr)
+summary(lm3)
+plot(lm3$fitted.values, lm3$residuals, pch=20)
+hist(lm3$residuals)
+qqnorm(lm3$residuals)
+qqline(lm3$residuals)
+
+
+# what about predictors that ARE highly correlated?
+mtcars
+mpg_model = lm(mpg~wt+hp, data=mtcars)
+summary(mpg_model)
+
+# add all variables
+mpg_model = lm(mpg ~ . , data=mtcars) # dot means all other variables
+summary(mpg_model)
+#adjusted R^2 dropped with all variables.
+
+pairs(mtcars[ ,c(1,3:4)])
+pairs(mtcars[ ,c(5:7)])
+pairs(mtcars[ ,c(1,3:7)], col='blue' )
+
+round(cor(mtcars[ ,c(1,3:7)]), 2)
+
+# stepwise regression
+mpg_model2 <- step(lm(mpg ~ . , data=mtcars))
+
+mpg_model2 <- lm(mpg ~ wt + qsec + am, data=mtcars)
+summary(mpg_model2)
+
+
+#----- Lesson 16: ANOVA: Comparing 3 Means -----
+
 #----- Lesson 17:  -----
 #----- Lesson 18:  -----
 #----- Lesson 19:  -----
