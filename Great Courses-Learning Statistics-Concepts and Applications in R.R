@@ -387,8 +387,30 @@ summary(mpg_model2)
 
 
 #----- Lesson 16: ANOVA: Comparing 3 Means -----
+# ANOVA - like regression for categorical variables (one categorial, one continuous)
+# F-stat close to 1 if no difference. >> 1 if there is a difference.
+# chi-squared distro - test for difference in variances.
 
-#----- Lesson 17:  -----
+require(stats); require(graphics)
+boxplot(weight ~ feed, data = chickwts, col = "lightgray", 
+        main = "Chickwts data", ylab = "Weight in grams", 
+        xlab="Type of Feed")
+summary(chickwts)
+results = aov(weight ~ feed, data = chickwts)  # aov = analysis of variance (ANOVA)
+summary(results)
+
+# ANOVA just tells you whether or not there is a difference among means.
+# Tukey shows comparison among each pair.
+
+#Tukey's Method 
+# Tukey's Honest Significance TEST (HSD)
+results = aov(weight ~ feed, data = chickwts)
+TukeyHSD(results, conf.level = 0.95)
+
+#----- Lesson 17: Analysis of Covariance and multiple ANOVA  -----
+
+
+
 #----- Lesson 18:  -----
 #----- Lesson 19:  -----
 #----- Lesson 20:  -----
