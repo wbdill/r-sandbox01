@@ -67,11 +67,33 @@ desserts
 
 #----- Recoding on import -----
 desserts2 <- desserts %>% 
-  mutate(tech_win = recode(technical, `1` = 1,
-                           .default = 0))
+  mutate(tech_win = recode(technical, `1` = 1, .default = 0))
 
 # Tidy data like:  baker score_1 score_2 score_3  guess_1 guess_2 guess_3
 data %>%
   gather(key = "key", value = "value", score_1:guess_3) %>%
   separate(key, into = c("var", "order"), convert = TRUE) %>%
   spread(var, value)
+
+
+bakers <- read_csv(p3)
+glimpse(bakers)
+
+# recoding with case_when
+bakers_skill <- bakers %>% 
+  mutate(skill = case_when(
+    star_baker > technical_winner ~ "super_star",
+    star_baker < technical_winner ~ "high_tech",
+    star_baker == 0 & technical_winner == 0 ~ NA_character_,
+    star_baker == technical_winner  ~ "well_rounded"
+  )) %>% 
+  drop_na(skill)
+
+bakers_skill %>%  
+  count(skill)
+
+
+bakers_skill %>%
+  ggplot(aes(x = skill, fill = as.factor(series_winner))) +
+  geom_bar()
+
