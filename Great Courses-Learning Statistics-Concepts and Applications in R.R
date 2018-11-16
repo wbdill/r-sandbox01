@@ -316,6 +316,7 @@ qqline(mpg_model$residuals)
 shapiro.test(mpg_model$residuals)  # p-value 0.1044 so residuals are NOT normal
 
 #----- Lesson 15: Multiple Linear Regression -----
+rm(list = ls())
 library(tidyverse)
 library(skimr)
 install.packages("MASS")
@@ -407,11 +408,88 @@ summary(results)
 results = aov(weight ~ feed, data = chickwts)
 TukeyHSD(results, conf.level = 0.95)
 
-#----- Lesson 17: Analysis of Covariance and multiple ANOVA  -----
+#----- Lesson 17: Analysis of Covariance (ANCOVA) and multiple ANOVA (MANOVA)  -----
+months = c(78,93,86,57,45,60,28,31,22,9,12,4)
+treat = gl(4,3)  # gl = generate factor levels
+lm.mod = lm(months~treat)
+anova(lm.mod)
+summary(lm.mod)
+
+# ANCOVA analysis of covariance - 1 continuous response variable (y) with 2 or more predictor vars (x) (either categorical or continuous)
+# ANCOVA is an extension of ANOVA that can statistically control the linear efffect of continuous variables you don't want to examine.
+
+
+# MANOVA is an ANOVA with 2 or more continuous response variables (y).
+# MANOVA extends ANOVA to compare three or more means.
+# MANOVA (vs multiple ANOVAs) is more likely to uncover real differences and avoid fake differences.
+# MANOVA pitfall: if any dependent vars are correlated, the independent var would appear more important than it actually is.
+# MANOVA conditions:
+# 1. the dependent vars should be normally distributed within groups.
+#    mshapiro.test - Shapiro test for multivariate normality
+# 2. Assumes homogeneity of variances across the range of predictor varibales
+# 3. Assumes linearity between:
+#    a. all pairs of dependent variables
+#    b. all pairs of covariates
+#    c. all dependent variable-covariate pairs
+
+# ANCOVA and MANOVA are powerful, but are more sensitive to violations of basic ANOVA assumptions.
+
+
+
+# one-way MANOVA on sepal data set (species is only independent variable)
+head(iris)
+
+boxplot(iris[, "Sepal.Length"] ~ Species, data=iris, ylab= "Sepal Length")
+
+boxplot(iris[, "Sepal.Width"] ~ Species, data=iris, ylab= "Sepal Width")
+
+boxplot(iris[, "Petal.Length"] ~ Species, data=iris, ylab= "Petal Length")
+
+boxplot(iris[, "Petal.Width"] ~ Species, data=iris, ylab= "Petal Width")
+
+# sepal length and width have lots of overlap, but petal width/length setosa is separate from other 2 species.
+
+# Do one way MANOVA
+library(MASS)
+data(iris)
+attach(iris)
+
+# MANOVA test
+man.mod = manova(cbind(Sepal.Length, Petal.Length) ~ Species, data = iris)
+man.mod
+
+summary(man.mod)
+
+summary.aov(man.mod)
+# petal length's very large F value (1180) indicates that petal length is giving more info about species.
+
+
+# MANOVA - Multivariate Analysis of Variance
+man1 <- manova(cbind(Sepal.Length,Sepal.Width,Petal.Length,Petal.Width) ~ Species, iris)
+summary.aov(man1)[1]
+summary.aov(man1)[2]
+summary.aov(man1)[3]
+summary.aov(man1)[4]
+
+# the large value for petal.length and petal.width distinguished the species better.
+
+# skull measurement data across 4 epochs
+install.packages("HSAUR")
+library(HSAUR)
+library(tidyverse)
+summary(skulls)
+head(skulls)
+glimpse(skulls)
+skim(skulls)
+
+sk.mod = lm(cbind(mb, bh, bl, nh) ~ epoch, data=skulls)
+manova(sk.mod)
+summary(manova(sk.mod))
 
 
 
 #----- Lesson 18:  -----
+
 #----- Lesson 19:  -----
 #----- Lesson 20:  -----
 #----- Lesson 21:  -----
