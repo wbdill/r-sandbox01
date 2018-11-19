@@ -105,3 +105,8 @@ bakers_skill <- bakers_skill  %>%
   
 bakers_skill %>%
   select(series, weeks_on_air)
+
+# https://here.r-lib.org/
+install.packages("here")
+library(here)
+here()
