@@ -97,3 +97,11 @@ bakers_skill %>%
   ggplot(aes(x = skill, fill = as.factor(series_winner))) +
   geom_bar()
 
+# lubridate intervals
+library(tidyverse)
+bakers_skill <- bakers_skill  %>% 
+  mutate(time_on_air = interval(first_date_appeared, last_date_appeared),
+         weeks_on_air = time_on_air / weeks(1))
+  
+bakers_skill %>%
+  select(series, weeks_on_air)
