@@ -71,7 +71,35 @@ house_prices %>%
 
 #----- Chapter 2: Basic regression -----
 
+ggplot(evals, aes(x = bty_avg, y = score)) +
+  geom_point() +
+  labs(x = "beauty score", y = "score") +
+  geom_smooth(method = "lm", se = FALSE)
 
+model_score_2 <- lm(score ~ bty_avg, data = evals)
+model_score_2
+get_regression_table(model_score_2) # get_regression_table part of moderndive pkg
+
+get_regression_points(model_score_2)
+
+
+ggplot(evals, aes(x = rank, y = score)) +
+  geom_boxplot() +
+  labs(x = "rank", y = "score")
+
+evals %>%
+  group_by(rank) %>%
+  summarize(n = n(), mean_score = mean(score), sd_score = sd(score))
+
+model_score_4 <- lm(score ~ rank, data = evals)
+get_regression_table(model_score_4)
+
+
+# plot residuals on on histogram.
+model_score_4_points <- get_regression_points(model_score_4)
+ggplot(model_score_4_points, aes(x = residual)) +
+  geom_histogram() +
+  labs(x = "residuals", title = "Residuals from score ~ rank model")
 
 #----- Chapter 3: Multiple regression -----
 
