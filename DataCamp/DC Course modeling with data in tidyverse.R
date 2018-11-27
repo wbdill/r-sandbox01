@@ -103,4 +103,44 @@ ggplot(model_score_4_points, aes(x = residual)) +
 
 #----- Chapter 3: Multiple regression -----
 
+house_prices <- house_prices %>%
+  mutate(log10_price = log10(price),
+         log10_size = log10(sqft_living))
+
+glimpse(house_prices)
+
+ggplot(house_prices, aes(x = bedrooms, y = log10_price)) +
+  geom_point() +
+  labs(x = "Number of bedrooms", y = "log10 price") +
+  geom_smooth(method = "lm", se = FALSE)
+
+# remove outlier (and re-run above graph)
+house_prices <- house_prices %>%
+  filter(bedrooms < 20)
+
+# model price on size and bedrooms
+model_price_2 <- lm(log10_price ~ log10_size + bedrooms, data = house_prices)
+get_regression_table(model_price_2)
+get_regression_points(model_price_2)
+
+model_price_4 <- lm(log10_price ~ log10_size + waterfront, data = house_prices)
+get_regression_table(model_price_4)
+
+ggplot(house_prices, aes(x=log10_size, y=log10_price, col = waterfront)) +
+  geom_point() +
+  facet_wrap(~waterfront) +
+  geom_smooth(method="lm", se = FALSE, color = "black")
+
+#multiple data point predictions
+get_regression_table(model_price_4)
+
+# get new data frame with column names matching the columns in the model
+new_houses_2 <- data_frame(
+  log10_size = c(2.9, 3.1) ,
+  waterfront = c(TRUE, FALSE)
+)
+# call get_regression_points with newdata = <new data frame>
+get_regression_points(model_price_4, newdata = new_houses_2) %>% 
+  mutate(price_hat = 10^log10_price_hat)
+
 #----- Chapter 4: Model assessment -----
