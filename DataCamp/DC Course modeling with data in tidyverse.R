@@ -1,4 +1,5 @@
 # Data Camp: Modeling with data in the tidyverse (Albert Kim)
+# https://gist.github.com/rudeboybert/fbc80aefb21287adad5cc014adb108cd
 # 1. Intro to modelling: theory and terminology
 # 2. Basic regression
 # 3. Multiple regression
@@ -144,3 +145,74 @@ get_regression_points(model_price_4, newdata = new_houses_2) %>%
   mutate(price_hat = 10^log10_price_hat)
 
 #----- Chapter 4: Model assessment -----
+
+# using sum of squares as a measure of fit.  Lower value means better fit, but there is no upper limit.
+get_regression_points(model_price_2) %>%
+  mutate(sq_residuals = residual^2) %>%
+  summarize(sum_sq_residuals = sum(sq_residuals))
+
+
+model_price_4 <- lm(log10_price ~ log10_size + waterfront,data = house_prices)
+
+# Calculate squared residuals
+get_regression_points(model_price_4) %>%
+  mutate(sq_residuals = residual^2) %>%
+  summarize(sum_sq_residuals = sum(sq_residuals))
+
+# --------------------------------------------------------
+# R^2 is a measure of fit between 0 and 1.  1 = best fit
+# R^2 = 1 - ( Var(residuals) / Var(y) )
+
+model_price_2 <- lm(log10_price ~ log10_size + bedrooms, data = house_prices)
+
+# Get fitted/values & residuals, compute R^2 using residuals
+get_regression_points(model_price_2) %>%
+  summarize(r_squared = 1 - var(residual) / var(log10_price))
+
+get_regression_points(model_price_4) %>%
+  summarize(r_squared = 1 - var(residual) / var(log10_price))
+
+# --------------------------------------------------------
+# Using Root Mean Square Error (RMSE)
+
+get_regression_points(model_price_2) %>%
+  mutate(sq_residuals = residual^2) %>%
+  summarize(mse = mean(sq_residuals)) %>%   #mean rather than sum (used for sum of squares)
+  mutate(rmse = sqrt(mse))
+
+get_regression_points(model_price_4) %>%
+  mutate(sq_residuals = residual^2) %>%
+  summarize(mse = mean(sq_residuals)) %>%   #mean rather than sum (used for sum of squares)
+  mutate(rmse = sqrt(mse))
+
+# --------------------------------------------------------
+# training and testing
+
+# randomly shuffle order of rows
+set.seed(76)  #seed value enables reproducibility
+house_prices_shuffled <- house_prices %>%
+  sample_frac(size = 1, replace = FALSE)
+
+# split into train set and test set
+train <- house_prices_shuffled %>%
+  slice(1:10000)
+test <- house_prices_shuffled %>%
+  slice(10001:21613)
+
+# create a model from train data
+train_model_price_1 <- lm(log10_price ~ log10_size + yr_built, data = train)
+get_regression_table(train_model_price_1)
+
+# get prediction on test data
+get_regression_points(train_model_price_1, newdata = test) %>%
+  mutate(sq_residuals = residual^2) %>%
+  summarize(rmse = sqrt(mean(sq_residuals)))
+
+# repeat with model 3 (size + condition)
+train_model_price_3 <- lm(log10_price ~ log10_size + condition, data = train)
+get_regression_points(train_model_price_3, newdata = test) %>%
+  mutate(sq_residuals = residual^2) %>%
+  summarize(rmse = sqrt(mean(sq_residuals)))
+
+# model 1 RMSE of .165 is lower  than model 3 RMSE of 1.68, so it is a better fit.
+
