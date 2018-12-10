@@ -27,7 +27,7 @@ dat %>%
 # which fan_num is the worst for each brand
 dat %>%
   group_by(brand) %>%
-  top_n(2, wt = -runtime_hours) %>%
+  top_n(n = 1, wt = -runtime_hours) %>%
   select(brand, round, fan_num, runtime_hours)
 
 #----- Charts -----
