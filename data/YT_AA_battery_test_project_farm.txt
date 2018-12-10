@@ -1,0 +1,23 @@
+brand	tech	mAh_drain	minutes	mAh	unit_cost	mAh_per_penny
+Dollar General	zinc	300	26	117	0.13	11.04
+Dollar General	zinc	300	35	158	0.13	11.04
+Duracell	alkaline	300	381	1747	0.73	23.67
+Duracell	alkaline	300	380	1738	0.73	23.67
+Amazon Basic	alkaline	300	301	1382	0.427	32.37
+Rayovac Fusion	alkaline	300	410	1884	0.87	21.72
+Duracell Quantum	alkaline	300	405	1850	1.16	15.99
+Harbor Freight Thunderbolt	zinc	300	28	125	0.29	4.29
+Energizer Ultimate Lithium	lithium	300	723	3317	1.5	21.26
+Eveready Silver	alkaline	300	303	1384	0.55	25.39
+Energizer	alkaline	300	411	1888	0.75	25.64
+Rayovac High Energy	alkaline	300	347	1589	0.7	25.53
+Harbor Freight Thunderbolt	zinc	100	181	275	0.29	9.44
+Dollar General	zinc	100	128	193	0.13	15.44
+Eveready Silver	alkaline	100	837	1279	0.55	23.47
+Rayovac High Energy	alkaline	100	1205	1844	0.7	23.53
+Duracell Quantum	alkaline	100	1363	2064	1.16	17.84
+Duracell	alkaline	100	1315	2012	0.74	27.33
+Energizer	alkaline	100	1329	2026	0.75	27.52
+Amazon Basic	alkaline	100	1043	1593	0.427	37.31
+Energizer Ultimate Lithium	lithium	100	2081	3152	1.5	20.21
+Rayovac Fusion	alkaline	100	958	1465	0.69	21.26
