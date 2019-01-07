@@ -21,3 +21,11 @@ Energizer	alkaline	100	1329	2026	0.75	27.52
 Amazon Basic	alkaline	100	1043	1593	0.427	37.31
 Energizer Ultimate Lithium	lithium	100	2081	3152	1.5	20.21
 Rayovac Fusion	alkaline	100	958	1465	0.69	21.26
+Kirkland	alkaline	100		2011	0.29	68.98
+Sunbeam	alkaline	100		1456	0.25	58.24
+AC Delco	alkaline	100		1521	0.32	47.53
+IKEA	alkaline	100		1656	0.76	21.93
+Kirkland	alkaline	300		1627	0.29	56.10
+Sunbeam	alkaline	300		1509	0.25	60.36
+AC Delco	alkaline	300		1535	0.32	47.97
+IKEA	alkaline	300		1611	0.76	21.20
