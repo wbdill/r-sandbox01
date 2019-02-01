@@ -78,12 +78,23 @@ census3 %>%
   select(state, married, widowed, divorced) %>%
   arrange(desc(married))
 
-census3 %>%
-  filter(state %in% c("California", "Florida", "Tennessee", "New York", "District of Columbia", "Utah")) %>%
+census_marital <- census3 %>%
   select(state, married, widowed, divorced) %>%
-  gather(key=marital_status, value = percent, 2:4) %>%
-  ggplot(aes(x = marital_status, y = percent)) +
-  geom_line(aes(group=state, color=state))
+  mutate(single = 100 - married - widowed - divorced) %>%
+  gather(key=marital_status, value = percent, 2:5) %>%
+  arrange(state, marital_status)
+  
+
+census_marital %>%
+  filter(state %in% c("California", "Mississippi", "Tennessee", "New York", "District of Columbia", "Utah")) %>%
+  ggplot(aes(x = reorder(marital_status, -percent), y = percent)) +
+  geom_col(aes(group=state, fill=state ), position="dodge") +
+  labs(
+    x = "Marital Status",
+    y = "Percent",
+    title = "US State Marital Status",
+    caption = "census.gov S0201 table 2017"
+  )
 
 #----- Graph of school age distribution -----
 census_school <- census3 %>%
