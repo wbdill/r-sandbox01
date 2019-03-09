@@ -182,5 +182,9 @@ ilo_dot_plot <- ilo_dot_plot +
 
 # View the plot
 ilo_dot_plot
-#----- Chapter 3 -----
+#----- Chapter 3 R Markdown -----
+
+
 #----- Chapter 4 -----
+
+
