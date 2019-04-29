@@ -1,19 +1,24 @@
 #----- King James Version Bible analysis -----
 # https://github.com/scrollmapper/bible_databases/blob/master/csv/t_kjv.csv
-install.packages("tidytext")
-install.packages("grkmisc")
+# https://github.com/wbdill/r-sandbox01
+
+#install.packages("tidytext")
+#install.packages("grkmisc")
 library(tidyverse)
 library(tidytext)
 
 kjv_books <- read_csv("C:/Data/R/data/kjv_books.csv")
+
 kjv <- read_csv("C:/Data/R/data/kjv_bible.csv")
 names(kjv) = c("id", "book", "chapter", "verse", "text")
+kjv <- kjv %>%
+  mutate(is_nt = case_when(book > 39 ~ 1,
+                           book <= 39 ~ 0))
+
 saveRDS(kjv, "C:/GitHub/r-sandbox01/data/kjv.rds")
 
 kjv_tidy <- kjv %>% 
-  tidytext::unnest_tokens(word, text) %>%
-  mutate(is_nt = case_when(book > 39 ~ 1,
-                           book <= 39 ~ 0))
+  tidytext::unnest_tokens(word, text)
 
 
 #----- verse count by book -----
@@ -41,15 +46,13 @@ kjv_book_summary <- kjv_book_chapters %>%
   mutate(is_nt = case_when(book > 39 ~ 1,
                            book <= 39 ~ 0))
 
-
 #----- word count by book/chapter -----
 kjv_tidy %>%
   count(book, chapter) %>%
   full_join(kjv_books) %>%
-  select(book, book_name, chapter, words = n) %>%
-  View()
+  select(book, book_name, chapter, words = n)
 
-#----- Word Count by Book -----
+#----- Chart: Word Count by Book -----
 kjv_plot <- kjv_book_summary %>%
   arrange(desc(words)) %>%
 #  slice(1:30) %>%
@@ -61,12 +64,12 @@ kjv_plot <- kjv_book_summary %>%
        title = "KJV Word Count by Book",
        caption = "") 
 
-
+kjv_plot
 png('C:/github/r-sandbox01/kjv_book_words.png', width = 1200, height = 900)
 plot(kjv_plot)
 dev.off()
 
-#----- Top 25 used words -----
+#----- Chart: Top 25 used words -----
 kjv_tidy %>% 
   anti_join(tidytext::stop_words) %>% 
   filter(!is.na(word), str_detect(word, "[a-zA-Z]")) %>% 
