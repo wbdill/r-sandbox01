@@ -115,7 +115,12 @@ batrips[, c("mean_duration", "median_duration") := list(as.integer(mean(duration
 d <- fread("a,b\n1,2\n3,4", verbose = TRUE)
 d
 
+c("foo", "bar", "ray")
+list(foo, bar, ray)
+.(foo, bar, ray)
+
 comics <- fread("C:/GitHub/r-sandbox01/DataCamp/data/comics.csv")
+saveRDS(comics, "C:/GitHub/r-sandbox01/DataCamp/data/comics.rds")
 comics[appearances > 1000, .(name, id, align, appearances, first_appear, publisher)][order(-appearances)]
 
 
