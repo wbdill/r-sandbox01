@@ -13,34 +13,36 @@ babynames %>% select(-prop)
 
 
 #----- graphs of baby names over time -----
-ylbl = "Number of Births (thousands)"
-var_name <- "William"
-
 #----- bunch of graphs of baby names over time -----
-var_name <- "Steve"
-
+ylbl = "Number of Births (thousands)"
+var_name <- "Carl"
 ctitle <- paste("Babies Born Named", var_name)
-babynames %>% filter(name == var_name, sex == "M", year > 1880) %>%
+
+babynames %>% 
+  filter(name == var_name, sex == "M", year > 1880) %>%
   ggplot(aes(year, n/1000)) + 
   geom_line() +
   labs(x = "Year", y = ylbl, title = ctitle) +
   scale_x_continuous(breaks = seq(1880, 2020, 10))
 
 #Brian vs Ryan
-babynames %>% filter(name %in% c("Brian", "Ryan"), sex == "M", year > 1950) %>%
+babynames %>% 
+  filter(name %in% c("Brian", "Ryan"), sex == "M", year > 1950) %>%
   ggplot(aes(year, n/1000)) + 
   geom_line() +
   labs(y = ylbl, title = "Births") +
   facet_grid(name~.)
 
 #Brian vs Tina
-babynames %>% filter( (name == "Brian" & sex == "M") | (name == "Tina" & sex == "F"), year > 1920) %>%
+babynames %>% 
+  filter( (name == "Brian" & sex == "M") | (name == "Tina" & sex == "F"), year > 1920) %>%
   ggplot(aes(year, n/1000, col = name)) + 
   geom_line() +
   labs(y = ylbl, title = "Births")
 
 #Steve vs Beth
-babynames %>% filter( (name == "Steve" & sex == "M") | (name == "Beth" & sex == "F"), year > 1920) %>%
+babynames %>% 
+  filter( (name == "Steve" & sex == "M") | (name == "Beth" & sex == "F"), year > 1920) %>%
   ggplot(aes(year, n/1000, col = name)) + 
   geom_line() +
   labs(y = ylbl, title = "Births")
@@ -71,14 +73,13 @@ baby_prop <- babynames %>%
   filter(sex == "M") %>%
   group_by(year) %>%
   arrange(desc(prop)) %>%
-  top_n(1) %>%
+  top_n(1)
 
 #----- Top male names by proportion -----
 baby_prop <- babynames %>% 
   group_by(year, sex) %>%
   mutate(rank = min_rank(desc(prop))) %>%
   filter(rank == 1) %>%
-
   ungroup()
 
 baby_prop %>% distinct(name)
