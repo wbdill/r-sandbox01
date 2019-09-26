@@ -10,7 +10,6 @@ glimpse(who_disease)
 ggplot(who_disease, aes(x=region)) +
   geom_bar()
 
-
 # filter data to AMR region. 
 amr_region <- who_disease %>%
   filter(region == "AMR")
@@ -74,7 +73,63 @@ ggplot(disease_counts, aes(x = region, y = total_cases, fill = disease)) +
   geom_col(position = "fill")
 
 #========== Chapter 2: Point data ==========
+who_disease %>% 
+  filter(country == 'India', year == 1980) %>% 
+  ggplot(aes(x = disease, y = cases)) +
+  geom_col()  #geom_col expects a y-axis, but geom_bar() does not.
 
+who_disease %>%
+    filter(cases > 1000) %>%
+    ggplot(aes(x = region)) +
+    geom_bar()  # add a geom_bar call
+
+interestingCountries <- c("NGA", "SDN", "FRA", "NPL", "MYS", "TZA", "YEM", "UKR", "BGD", "VNM")
+who_subset <- who_disease %>%
+  filter(countryCode %in% interestingCountries,
+         disease == 'measles',
+         year %in% c(1992, 2002)
+         ) %>%
+  mutate(year = paste0('cases_', year)) %>%
+  spread(year, cases)
+ggplot(who_subset, aes(x = log10(cases_1992), y = reorder(country, cases_1992))) +
+  geom_point()
+
+who_subset %>% 
+  mutate(logFoldChange = log2(cases_2002/cases_1992)) %>% 
+  ggplot(aes(x = logFoldChange, y = reorder(country, logFoldChange))) +
+     geom_point() +
+     geom_vline(xintercept = 0) +
+     xlim(-6,6) +
+     facet_grid(region~., scale='free_y')
+
+#tuning the charts
+amr_pertussis <- who_disease %>% 
+  filter(   # filter data to our desired subset
+    region == 'AMR', 
+    year == 1980, 
+    disease == 'pertussis'
+  )
+# Set x axis as country ordered with respect to cases. 
+ggplot(amr_pertussis, aes(x = reorder(country, cases), y = cases)) +
+  geom_col() +
+  coord_flip()
+
+# filter out zero cases and get rid of major gridlines w/ theme
+amr_pertussis %>%
+  filter(cases > 0) %>%
+ggplot(aes(x = reorder(country, cases), y = cases)) +
+  geom_col() +
+  coord_flip() + 
+  theme(
+    panel.grid.major.y = element_blank()
+  )
+
+amr_pertussis %>% filter(cases > 0) %>% 
+  ggplot(aes(x = reorder(country, cases), y = cases)) + 
+  geom_point(size=2) + 
+  scale_y_log10() +  # change y-axis to log10. 
+  theme_minimal() +  # add theme_minimal()
+  coord_flip()
 
 #========== Chapter 3: Single Distributions ==========
 
