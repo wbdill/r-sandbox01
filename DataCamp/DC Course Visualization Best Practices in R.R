@@ -132,7 +132,43 @@ amr_pertussis %>% filter(cases > 0) %>%
   coord_flip()
 
 #========== Chapter 3: Single Distributions ==========
+md_speeding <- fread("D:/Downloads/Traffic_Violations.csv")
+
+md_speeding <- md_speeding %>%
+  filter(str_detect(md_speeding$`Date Of Stop`, "2017$") > 0) 
+
+# not the same data as in the video, so these won't run.
+md_speeding %>%
+  select('Date Of Stop', `Work Zone`, VehicleType, Color, Race, Gender, `Driver State`) %>%
+  head()
+glimpse(md_speeding)
+
+ggplot(md_speeding) + 
+  geom_histogram(
+      aes(x = speed_over),
+      alpha = 0.7
+  ) +
+  theme_minimal()
+
+ggplot(md_speeding) +
+  geom_histogram(
+    aes(x = hour_of_day, y = stat(density)),
+    alpha = 0.8
+  )
 
 
+ggplot(md_speeding) +
+  geom_histogram(
+    aes(x = percentage_over_limit),
+    bins = 100,     # set bin number to 40
+    fill = 'steelblue',
+    alpha = 0.8)    # reduce alpha to 0.8
+
+ggplot(md_speeding,aes(x = hour_of_day)) +
+  geom_histogram(
+    binwidth = 1,  # set binwidth to 1
+    center = 0.5  # Center bins at the half (0.5) hour
+  ) +
+  scale_x_continuous(breaks = 0:24)
 #========== Chapter 4: Comparing Distributions ==========
 
