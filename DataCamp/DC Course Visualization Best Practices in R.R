@@ -170,5 +170,98 @@ ggplot(md_speeding,aes(x = hour_of_day)) +
     center = 0.5  # Center bins at the half (0.5) hour
   ) +
   scale_x_continuous(breaks = 0:24)
+
+ggplot(truck_speeding, aes(x = hour_of_day)) +
+  geom_density(bw = 1.5, fill = 'steelblue', alpha = 0.5) +
+  # add a rug plot using geom_rug to see individual datapoints, set alpha to 0.5.
+  geom_rug(alpha = 0.5) +
+  labs(title = 'Citations by hour', subtitle = "Gaussian kernel SD = 1.5")
+
 #========== Chapter 4: Comparing Distributions ==========
+
+md_speeding %>% 
+  filter(vehicle_color == 'RED') %>%
+  ggplot(aes(gender, speed)) + 
+  geom_jitter(color = 'steelblue', alpha = 0.3) +
+  geom_boxplot(alpha = 0) +
+  labs(title = 'Speed of red cars by gender of driver')
+
+
+md_speeding %>% 
+  ggplot(aes(x = gender, y = speed)) + 
+  geom_jitter(alpha = 0.3, color = 'steelblue') +
+  geom_boxplot(alpha = 0) +
+  facet_wrap(~vehicle_color) +
+  labs(title = 'Speed of different car colors, separated by gender of driver')
+
+# geom_beeswarm in ggbeeswarm pkg  good for medium number of data points
+# geom_violin good for large amount of data (not every datapoint is seen)
+
+library(ggbeeswarm)
+
+md_speeding %>% 
+  filter(vehicle_color == 'RED') %>%
+  ggplot(aes(x = gender, y = speed)) + 
+  geom_beeswarm(cex = 0.5, alpha = 0.8) +
+  geom_boxplot(alpha = 0)
+
+md_speeding %>% 
+  filter(vehicle_color == 'RED') %>%
+  ggplot(aes(x = gender, y = speed)) + 
+  geom_violin(bw = 2.5, alpha = 0.7, size = 0.5) +
+  geom_point(alpha = 0.3, size = 0.5)
+
+md_speeding %>% 
+  filter(vehicle_color == 'RED') %>%
+  ggplot(aes(x = gender, y = speed)) + 
+  geom_violin(bw = 2.5) +
+  geom_boxplot(alpha = 0, width = 0.3) +
+  geom_point(alpha = 0.3, shape = 95) +
+  labs(subtitle = 'Gaussian kernel SD = 2.5')
+
+
+md_speeding %>% 
+  ggplot(aes(x = gender, y = speed)) + 
+  geom_violin(alpha = 0.3, fill = 'steelblue', bw = 2.5) +
+  geom_boxplot(alpha = 0, width = 0.3) +
+  facet_wrap(~vehicle_color) +
+  labs(
+    title = 'Speed of different car colors, separated by gender of driver',
+    subtitle = 'Gaussian kernel width: 2.5'
+  
+  )
+
+# ggridges pkg for ridgeline plots
+
+library(ggridges)
+
+md_speeding %>% 
+  mutate(day_of_week = factor(day_of_week, levels = c("Mon","Tues","Wed","Thu","Fri","Sat","Sun") )) %>% 
+  ggplot(aes( x = percentage_over_limit, y = day_of_week)) + 
+  geom_density_ridges(bandwidth = 3.5) +
+  scale_x_continuous(limit = c(0,150)) +
+  labs(subtitle = 'Gaussian kernel SD = 3.5')
+
+
+md_speeding %>% 
+  mutate(day_of_week = factor(day_of_week, levels = c("Mon","Tues","Wed","Thu","Fri","Sat","Sun") )) %>% 
+  ggplot(aes( x = percentage_over_limit, y = day_of_week)) + 
+  geom_density_ridges(bandwidth = 3.5, alpha = 0.7) +
+  scale_x_continuous(limits = c(0,150), expand = c(0,0)) +
+  labs(subtitle = 'Guassian kernel SD = 3.5') +
+  theme(axis.ticks.y = element_blank())  # remove y axis ticks
+
+md_speeding %>% 
+  mutate(day_of_week = factor(day_of_week, levels = c("Mon","Tues","Wed","Thu","Fri","Sat","Sun") )) %>% 
+  ggplot(aes( x = percentage_over_limit, y = day_of_week)) + 
+  geom_point(
+    alpha = 0.2,
+    shape = '|',
+    position = position_nudge(y = -0.05)
+  ) +
+  geom_density_ridges(bandwidth = 3.5, alpha = 0.7) +
+  scale_x_continuous(limits = c(0,150), expand  = c(0,0)) +
+  labs(subtitle = 'Guassian kernel SD = 3.5') +
+  theme( axis.ticks.y = element_blank() )
+
 
