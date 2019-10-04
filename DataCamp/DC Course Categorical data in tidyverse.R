@@ -1,4 +1,5 @@
 # https://www.datacamp.com/courses/categorical-data-in-the-tidyverse
+# https://cran.r-project.org/web/packages/fivethirtyeight/vignettes/fivethirtyeight.html
 rm(list = ls())
 install.packages("fivethirtyeight")
 library(fivethirtyeight)
@@ -10,7 +11,7 @@ library(forcats)
 
 
 multiple_choice_responses <- fread("C:/GitHub/r-sandbox01/DataCamp/data/smc_with_js.csv")
-flying <- fread("C:/GitHub/r-sandbox01/DataCamp/data/flying-etiquette.csv")
+flying_etiquette <- fread("C:/GitHub/r-sandbox01/DataCamp/data/flying-etiquette.csv")
 
 #========== Ch 1: Introduction to Factor Variables ==========
 # categorical and ordinal are typically factors
@@ -49,13 +50,86 @@ ggplot(multiple_choice_responses, aes(fct_rev(fct_infreq(EmployerIndustry)))) +
 multiple_choice_responses %>%
   filter(!is.na(Age) & !is.na(EmployerIndustry) )    # remove NAs
   group_by(EmployerIndustry) %>%
-  summarize(mean_age = mean(Age))) %>%
-  mutate(EmployerIndustry = fct_reorder(EmployerIndustry, mean_age)) %>%
+  summarize(mean_age = mean(Age)) %>%
   ggplot(aes(x = EmployerIndustry, y = mean_age)) + 
   geom_point() + 
   coord_flip()
+  
 #========== Ch 2: Manipulating Factor Variables ==========
 
+multiple_choice_responses$WorkInternalVsExternalTools <- as.factor(multiple_choice_responses$WorkInternalVsExternalTools)
+levels(multiple_choice_responses$WorkInternalVsExternalTools)
+
+mc_responses_reordered <- multiple_choice_responses %>%
+    mutate(WorkInternalVsExternalTools = fct_relevel(WorkInternalVsExternalTools,
+                                                     "Entirely internal", 
+                                                     "More internal than external",
+                                                     "Approximately half internal and half external",
+                                                     "More external than internal", 
+                                                     "Entirely external",
+                                                     "Do not know"))
+levels(multiple_choice_responses$WorkInternalVsExternalTools)
+levels(mc_responses_reordered$WorkInternalVsExternalTools)
+
+ggplot(mc_responses_reordered, aes(x=WorkInternalVsExternalTools)) +
+  geom_bar() +
+  coord_flip()
+
+multiple_choice_responses %>%
+  # Move "I did not complete any formal education past high school" and "Some college/university study without earning a bachelor's degree" to the front
+  mutate(FormalEducation = fct_relevel(FormalEducation, "I did not complete any formal education past high school", "Some college/university study without earning a bachelor's degree")) %>%
+  # Move "I prefer not to answer" to be the last level.
+  mutate(FormalEducation = fct_relevel(FormalEducation, "I prefer not to answer", after = Inf)) %>%
+  # Move "Doctoral degree" to be after the 5th level
+  mutate(FormalEducation = fct_relevel(FormalEducation, "Doctoral degree", after = 5)) %>%
+  # Examine the new level order
+  pull(FormalEducation) %>%
+  levels()
+
+ggplot(multiple_choice_responses, aes(FormalEducation)) + 
+  geom_bar()
+
+multiple_choice_responses %>%
+  # rename the appropriate levels to "High school" and "Some college"
+  mutate(FormalEducation = fct_recode(FormalEducation,
+                               "High school" = "I did not complete any formal education past high school", 
+                               "Some college" = "Some college/university study without earning a bachelor's degree")) %>%
+  ggplot(aes(x = FormalEducation)) + 
+  geom_bar()
+
+
+# fct_collapse - collapses multiple levels into one
+# fct_other keep/drop, fct_lump n= or prop=.05
+multiple_choice_responses %>%
+  # Create new variable, grouped_titles, by collapsing levels in CurrentJobTitleSelect
+  mutate(grouped_titles = fct_collapse(CurrentJobTitleSelect, 
+                           "Computer Scientist" = c("Programmer", "Software Developer/Software Engineer"), 
+                           "Researcher" = "Scientist/Researcher", 
+                           "Data Analyst/Scientist/Engineer" = c("DBA/Database Engineer", "Data Scientist", 
+                                                                 "Business Analyst", "Data Analyst", 
+                                                                 "Data Miner", "Predictive Modeler"))) %>%
+  # Keep all the new titles and turn every other title into "Other"
+  mutate(grouped_titles = fct_other(grouped_titles, 
+                           keep = c("Computer Scientist", 
+                                   "Researcher", 
+                                   "Data Analyst/Scientist/Engineer"))) %>% 
+  count(grouped_titles)  # Get a count of the grouped titles
+
+multiple_choice_responses %>%
+  # remove NAs of MLMethodNextYearSelect
+  filter(!is.na(MLMethodNextYearSelect)) %>%
+           # create ml_method, which lumps all those with less than 5% of people into "Other"
+           mutate(ml_method = fct_lump(MLMethodNextYearSelect, prop = .05)) %>%
+           # count the frequency of your new variable, sorted in descending order
+           count(ml_method, sort = TRUE)
+
+multiple_choice_responses %>%
+  # remove NAs 
+  filter(!is.na(MLMethodNextYearSelect)) %>%
+  # create ml_method, retaining the 5 most common methods and renaming others "other method" 
+  mutate(ml_method = fct_lump(MLMethodNextYearSelect, n=5, other_level = "other method")) %>%
+  # count the frequency of your new variable, sorted in descending order
+  count(ml_method, sort=TRUE)
 #========== Ch 3: Creating Factor Variables ==========
 
 #========== Ch 4: Case Study on Flight Etiquette ==========
