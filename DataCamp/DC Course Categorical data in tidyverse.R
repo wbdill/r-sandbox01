@@ -203,4 +203,49 @@ multiple_choice_responses %>%
 
 #========== Ch 4: Case Study on Flight Etiquette ==========
 
+flying_etiquette
+glimpse(flying_etiquette)
+gathered_data <- flying_etiquette %>%
+  mutate_if(is.character, as.factor) %>%
+  filter(`How often do you travel by plane?` != "Never") %>%
+  select(contains("rude")) %>%
+  gather(response_var, value)
 
+
+rude_behaviors <- gathered_data %>%
+  mutate(response_var = str_remove(response_var, ".*rude to ")) %>%
+  mutate(response_var = str_remove(response_var, "on a plane")) %>%
+  filter(!is.na(value)) %>%
+  mutate(rude = if_else(value %in% c('No, not rude at all', 'No, not at all rude'), 0, 1)) %>%
+  group_by(response_var) %>%
+  summarize(perc_rude = mean(rude))
+
+rude_behaviors
+
+initial_plot <- rude_behaviors %>%
+  mutate(response_var = fct_reorder(response_var, perc_rude)) %>%  # reorder response_var by perc_rude
+  ggplot(aes(x = response_var, y = perc_rude)) +  # make a bar plot of perc_rude by response_var
+  geom_col()
+
+initial_plot
+
+titled_plot <- initial_plot + 
+  # Add the title, subtitle, and caption
+  labs(title = "Hell Is Other People In A Pressurized Metal Tube",
+         subtitle = "Percentage of 874 air-passenger respondents who said action is very or somewhat rude",
+         caption = "Source: SurveyMonkey Audience", 
+         # Remove the x- and y-axis labels
+        x = "", y = "")
+titled_plot
+
+flipped_plot <- titled_plot + 
+  coord_flip() +    # Flip the axes
+  theme(axis.text.x = element_blank(), 
+        axis.ticks.x = element_blank()) # Remove the x-axis ticks and labels
+
+flipped_plot + 
+  # Apply percent() to perc_rude to label above the bar with the perc value
+  geom_text(aes(label = scales::percent(perc_rude), 
+                   y = perc_rude + .05), 
+            position = position_dodge(0.9),
+            vjust = 1)
