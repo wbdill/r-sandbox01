@@ -130,6 +130,77 @@ multiple_choice_responses %>%
   mutate(ml_method = fct_lump(MLMethodNextYearSelect, n=5, other_level = "other method")) %>%
   # count the frequency of your new variable, sorted in descending order
   count(ml_method, sort=TRUE)
+
 #========== Ch 3: Creating Factor Variables ==========
+learning_platform_usefulness <- multiple_choice_responses %>%
+  select(contains("LearningPlatformUsefulness")) %>%  # select columns with LearningPlatformUsefulness in title
+  gather(learning_platform, usefulness) %>%
+  filter(!is.na(usefulness)) %>%   # remove rows where usefulness is NA
+  mutate(learning_platform = str_remove(learning_platform, "LearningPlatformUsefulness"))    # remove "LearningPlatformUsefulness" from each string in learning_platform 
+
+perc_useful_platform <- learning_platform_usefulness %>%
+  # change dataset to one row per learning_platform usefulness pair with number of entries for each
+  count(learning_platform, usefulness) %>%
+  add_count(learning_platform, wt = n) %>%   # add_count to add group count to each record
+  mutate(perc = n / nn)
+
+ggplot(perc_useful_platform, aes(x = usefulness, y = perc, group = learning_platform)) +
+   geom_line() +
+  facet_wrap(~learning_platform)
+
+usefulness_by_platform <- learning_platform_usefulness %>%
+  mutate(usefulness = if_else(usefulness == "Not Useful", 0, 1)) %>%   # If usefulness is "Not Useful", make 0, else 1 
+  group_by(learning_platform) %>%  # Group by learning platform 
+  summarize(avg_usefulness = mean(usefulness))  # Summarize the mean usefulness for each platform
+
+ggplot(usefulness_by_platform, aes(x = learning_platform, y = avg_usefulness)) +
+  geom_point() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(x = "Learning Platform", y = "Percent finding at least somewhat useful") +
+  scale_y_continuous(labels = scales::percent)
+
+usefulness_by_platform %>%
+  # reorder learning_platform by avg_usefulness
+  mutate(learning_platform = fct_reorder(learning_platform, avg_usefulness)) %>%
+  # reverse the order of learning_platform
+  mutate(learning_platform = fct_rev(learning_platform)) %>%
+  ggplot(aes(x = learning_platform, y = avg_usefulness)) + 
+  geom_point() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+  labs(x = "Learning Platform", y = "Percent finding at least somewhat useful") + 
+  scale_y_continuous(labels = scales::percent)
+
+
+# dplyer::case_when
+multiple_choice_responses %>%
+  filter(between(Age, 10, 90)) %>%   # Filter for rows where Age is between 10 and 90
+  # Create the generation variable based on age
+  mutate(generation = case_when(
+    between(Age, 10, 22) ~ "Gen Z", 
+    between(Age, 23, 37) ~ "Gen Y", 
+    between(Age, 38, 52) ~ "Gen X", 
+    between(Age, 53, 71) ~ "Baby Boomer", 
+    between(Age, 72, 90) ~ "Silent"
+  )) %>%
+  count(generation)
+
+# case_when multiple columns
+
+multiple_choice_responses %>%
+  # Filter out people who selected Data Scientist as their Job Title
+  filter(CurrentJobTitleSelect != "Data Scientist") %>%
+  # Create a new variable, job_identity
+  mutate(job_identity = case_when(
+    CurrentJobTitleSelect == "Data Analyst" & 
+      DataScienceIdentitySelect == "Yes" ~ "DS analysts", 
+    CurrentJobTitleSelect == "Data Analyst" & 
+      DataScienceIdentitySelect %in% c("No", "Sort of (Explain more)") ~ "NDS analyst", 
+    CurrentJobTitleSelect != "Data Analyst" & 
+      DataScienceIdentitySelect == "Yes" ~ "DS non-analysts", 
+    TRUE ~ "NDS non analysts")) %>%
+  group_by(job_identity) %>%
+  summarize(avg_js = mean(JobSatisfaction, na.rm = TRUE))
 
 #========== Ch 4: Case Study on Flight Etiquette ==========
+
+
