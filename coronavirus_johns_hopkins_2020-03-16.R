@@ -1,0 +1,108 @@
+
+#----- Johns Hopkins CSSE data repository -----
+# https://pastebin.com/g8BTSmwN
+# https://github.com/CSSEGISandData/COVID-19
+# https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports
+# https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-15-2020.csv
+# https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series
+# https://datahub.io/JohnSnowLabs/population-figures-by-country
+#library(data.table)
+library(tidyverse)
+library(lubridate)
+
+
+#----- Read in data -----
+jhconfirmed <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv")
+jhdeaths <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv")
+jhrecovered <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv")
+jhcountries <- jhconfirmed %>% select(Province.State, Country.Region, Lat, Long)
+names(jhcountries) <- c("Province", "Country", "Lat", "Long")
+
+#----- data wrangle -----
+jhconfirmed2 <- select(jhconfirmed, -Lat, -Long) %>%
+  gather(key = "date", value = "confirmed", -Province.State, -Country.Region)
+jhconfirmed2$date <- str_replace(jhconfirmed2$date, "X", "")
+jhconfirmed2$date <- mdy(jhconfirmed2$date)
+names(jhconfirmed2) <- c("Province", "Country", "Date", "Confirmed")
+
+jhdeaths2 <- select(jhdeaths, -Lat, -Long) %>%
+  gather(key = "date", value = "deaths", -Province.State, -Country.Region)
+jhdeaths2$date <- str_replace(jhdeaths2$date, "X", "")
+jhdeaths2$date <- mdy(jhdeaths2$date)
+names(jhdeaths2) <- c("Province", "Country", "Date", "Deaths")
+
+jhrecovered2 <- select(jhrecovered, -Lat, -Long) %>%
+  gather(key = "date", value = "recovered", -Province.State, -Country.Region)
+jhrecovered2$date <- str_replace(jhrecovered2$date, "X", "")
+jhrecovered2$date <- mdy(jhrecovered2$date)
+names(jhrecovered2) <- c("Province", "Country", "Date", "Recovered")
+# head(jhrecovered2)
+
+jh <- inner_join(jhconfirmed2, jhdeaths2) %>%
+  inner_join(jhrecovered2)
+
+head(jh)
+jh_gis <- inner_join(jh, jhcountries)
+
+#----- Save csv files -----
+write_csv(jh, path = "C:/Users/brian.dill/Downloads/covid19_jh_timeseries.csv")
+write_csv(jhcountries, path = "C:/Users/brian.dill/Downloads/covid19_jh_country_lat_long.csv")
+write_csv(jh_gis, path = "C:/Users/brian.dill/Downloads/covid19_jh_timeseris_with_latlong.csv")
+
+
+#----- graph -----
+jh %>%
+  filter(Country %in% c("China")) %>%
+  ggplot(aes(x = Date, y = Confirmed, color = Province)) +
+  geom_line() +
+  labs(title = "Confirmed covid-19 cases by Province in China",
+       subtitle = "Data Repository by Johns Hopkins CSSE",
+       caption = "Source: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
+ggsave(filename = "C:/Users/brian.dill/Downloads/covid19_by_china_province.png", width = 10, height = 6, dpi = 120)
+
+
+jh_graph_data <- jh %>%
+  filter(Country %in% c("Italy", "Iran", "US", "Canada", "Singapore")) %>%
+  group_by(Country, Date) %>%
+  mutate(Confirmed = sum(Confirmed)) %>%
+  distinct(Country, Date, Confirmed) 
+
+jh_graph_data %>%
+  ggplot(aes(x = Date, y = Confirmed, color = Country)) +
+  geom_line() +
+  labs(title = "Confirmed covid-19 cases by Country",
+       subtitle = "Data Repository by Johns Hopkins CSSE",
+       caption = "Source: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
+ggsave(filename = "C:/Users/brian.dill/Downloads/covid19_by_country.png", width = 10, height = 6, dpi = 120)
+
+#----- Country populations -----
+
+country_pop <-read_csv("https://datahub.io/JohnSnowLabs/population-figures-by-country/r/population-figures-by-country-csv.csv")
+country_pop2 <- country_pop %>%
+  select(Country, pop = Year_2016) %>%
+  mutate(Country = case_when(Country == "United States" ~ "US", 
+                             Country == "Iran, Islamic Rep." ~ "Iran",
+                             TRUE ~ Country))
+
+#----- daily update v population -----
+
+jh_daily <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-19-2020.csv")
+                      
+names(jh_daily) <- c("Province", "Country", "Date", "Confirmed", "Deaths", "Recovered", "Lat", "Long")
+
+countries_of_interest <- c("US", "Italy", "China", "Canada", "Iran", "United Kingdom", "Germany", "France", "Spain", "Switzerland")
+
+jh_daily %>%
+  #filter(Country %in% countries_of_interest ) %>%
+  group_by(Country) %>%
+  summarise(Confirmed = sum(Confirmed), Deaths = sum(Deaths)) %>%
+  inner_join(country_pop2) %>%
+  filter(pop > 1000000) %>%
+  mutate(PopMillions = round(pop / 1000000, digits = 1),
+         ConfirmedPerMill = round(Confirmed / PopMillions, digits = 1),
+         DeathsPerMill = round(Deaths / PopMillions, digits = 1)) %>%
+  select(Country, PopMillions, Confirmed, ConfirmedPerMill, Deaths, DeathsPerMill) %>%
+  arrange(desc(ConfirmedPerMill)) %>%
+  top_n(50) %>%
+  write_csv(path = "C:/Users/brian.dill/Downloads/covid19_high_confirmed_per_pop.csv")
+
