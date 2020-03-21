@@ -3,9 +3,9 @@
 rm(list = ls())
 library(readxl)
 library(tidyverse)
+setwd("C:/Users/bdill/Downloads")
 
-path <- "C:/Users/brian.dill/Downloads/COVID-19-geographic-disbtribution-worldwide-2020-03-17.xlsx"
-covid19 <- read_excel(path)
+covid19 <- read_excel(paste0(getwd(), "/COVID-19-geographic-disbtribution-worldwide-2020-03-17.xlsx"))
 names(covid19) <- c("DateRep", "Day", "Month", "Year", "Cases", "Deaths", "Country", "GeoID")
 
 covid19 %>%
