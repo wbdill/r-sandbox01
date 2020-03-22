@@ -83,8 +83,20 @@ jh_country %>%
   labs(title = "Confirmed covid-19 cases by Country",
        subtitle = "Data Repository by Johns Hopkins CSSE",
        caption = "Source: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
+ggsave(filename = paste0(getwd(), "/covid19_cases_by_country.png"), width = 10, height = 6, dpi = 120)
+
+jh_country %>%
+  filter(Country %in% c("Italy", "Iran", "US", "Spain", "Germany", "China")) %>%
+  ggplot(aes(x = Date, y = Deaths, color = Country)) +
+  geom_line() +
+  scale_y_log10(limits = c(10, 10000)) +  
+  labs(title = "Confirmed covid-19 Deaths by Country",
+       subtitle = "Data Repository by Johns Hopkins CSSE",
+       caption = "Source: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
+ggsave(filename = paste0(getwd(), "/covid19_deaths_by_country.png"), width = 10, height = 6, dpi = 120)
 
 ggsave(filename = paste0(getwd(), "/covid19_by_country.png"), width = 10, height = 6, dpi = 120)
+jh_country %>% filter(Country %in% c("Italy", "Iran", "US", "Spain", "Germany", "China")) %>% arrange(desc(Date), Country)
 
 #----- Country populations -----
 
@@ -97,7 +109,7 @@ country_pop2 <- country_pop %>%
 
 #----- daily update v population -----
 
-jh_daily <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-19-2020.csv")
+jh_daily <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-21-2020.csv")
                       
 names(jh_daily) <- c("Province", "Country", "Date", "Confirmed", "Deaths", "Recovered", "Lat", "Long")
 
@@ -111,9 +123,10 @@ jh_daily %>%
   filter(pop > 1000000) %>%
   mutate(PopMillions = round(pop / 1000000, digits = 1),
          ConfirmedPerMill = round(Confirmed / PopMillions, digits = 1),
-         DeathsPerMill = round(Deaths / PopMillions, digits = 1)) %>%
-  select(Country, PopMillions, Confirmed, ConfirmedPerMill, Deaths, DeathsPerMill) %>%
+         DeathsPerMill = round(Deaths / PopMillions, digits = 1),
+         MortalityRate = round((Deaths / Confirmed)*100, digits = 1)) %>%
+  select(Country, PopMillions, Confirmed, ConfirmedPerMill, Deaths, DeathsPerMill, MortalityRate) %>%
   arrange(desc(ConfirmedPerMill)) %>%
   top_n(50) %>%
-  write_csv(path = "C:/Users/brian.dill/Downloads/covid19_high_confirmed_per_pop.csv")
-
+  write_csv(path = paste0(getwd(), "/covid19_high_confirmed_per_pop.csv"))
+  
