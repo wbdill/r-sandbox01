@@ -1,0 +1,56 @@
+#----- R for Data Science (Hadley Wickham) -----
+#----- Chapter 5 -----
+rm(list = ls())
+ggplot(data = diamonds) +
+  geom_bar(mapping = aes(x = cut))
+
+count(diamonds, cut)
+
+diamonds %>%
+  filter(between(y, 3, 20))
+
+diamonds %>%
+  filter(between(y, 0, 3))
+
+diamonds2 <- diamonds %>%
+  mutate(y = ifelse(y < 3 | y > 20, NA, y))
+
+diamonds2 %>%
+  ggplot(aes(x = x, y = y)) + 
+  geom_point()
+
+
+install.packages("nycflights13")
+library(nycflights13)
+nycflights13::flights %>%
+  mutate(cancelled = is.na(dep_time),
+         sched_hour = sched_dep_time %/% 100,
+         sched_min = sched_dep_time %% 100,
+         sched_dep_time = sched_hour + sched_min / 60) %>%
+  ggplot(aes(x = sched_dep_time, y = ..density..)) +
+  geom_freqpoly(aes(color=cancelled,
+                    binwidth = 1/4))
+ggplot(diamonds) + 
+  geom_count(aes(x = cut, y = color))
+
+diamonds %>%
+  count(cut, color)
+
+diamonds %>%
+  count(cut, color) %>%
+  ggplot(aes(x = color, y = cut)) +
+  geom_tile(aes(fill = n))
+
+# two continuous vars
+ggplot(diamonds) +
+  geom_point(aes(x = carat, y = price), alpha = .02)
+
+ggplot(diamonds) +
+  geom_bin2d(aes(x = carat, y = price))
+install.packages("hexbin")
+library(hexbin)
+ggplot(diamonds) +
+  geom_hex(aes(x = carat, y = price))
+
+ggplot(diamonds, aes(x = carat, y = price)) +
+  geom_boxplot(aes(group = cut_width(carat, 0.1)))
