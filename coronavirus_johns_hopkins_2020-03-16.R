@@ -6,10 +6,11 @@
 # https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-15-2020.csv
 # https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series
 # https://datahub.io/JohnSnowLabs/population-figures-by-country
+# rm(list = ls())
 #library(data.table)
 library(tidyverse)
 library(lubridate)
-setwd("C:/Users/brian.dill/Downloads/")
+#setwd("C:/Users/brian.dill/Downloads/")
 setwd("C:/Users/bdill/Downloads/")
 
 #----- Read in data -----
@@ -37,7 +38,6 @@ jhrecovered2 <- select(jhrecovered, -Lat, -Long) %>%
 jhrecovered2$date <- str_replace(jhrecovered2$date, "X", "")
 jhrecovered2$date <- mdy(jhrecovered2$date)
 names(jhrecovered2) <- c("Province", "Country", "Date", "Recovered")
-# head(jhrecovered2)
 
 jh <- inner_join(jhconfirmed2, jhdeaths2) %>%
   inner_join(jhrecovered2) %>%
@@ -89,7 +89,7 @@ jh_country %>%
   filter(Country %in% c("Italy", "Iran", "US", "Spain", "Germany", "China")) %>%
   ggplot(aes(x = Date, y = Deaths, color = Country)) +
   geom_line() +
-  scale_y_log10(limits = c(10, 10000)) +  
+  #scale_y_log10(limits = c(10, 10000)) +  
   labs(title = "Confirmed covid-19 Deaths by Country",
        subtitle = "Data Repository by Johns Hopkins CSSE",
        caption = "Source: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")

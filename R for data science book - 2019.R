@@ -54,3 +54,10 @@ ggplot(diamonds) +
 
 ggplot(diamonds, aes(x = carat, y = price)) +
   geom_boxplot(aes(group = cut_width(carat, 0.1)))
+
+#----- Chapter 6 Workflow: Projects -----
+# Ctrl + Shift F10 to restart R Studio
+# Ctrl + Shift S to return current script
+
+getwd()
+
