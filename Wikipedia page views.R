@@ -21,14 +21,14 @@ ggplot(wpviews, aes(x = date, y = views, col=article)) +
   #scale_color_hue(labels = c("Trump", "Butina", "Manafort"))  #override legend labels
 
 #----- -----
-# look at days with Papadopoulos views > 5000
+# look at days with Paul_Manafort views > 5000
 wpviews <- article_pageviews(project = "en.wikipedia", 
                              article = c("Donald Trump", "George_Papadopoulos", "Paul_Manafort"), 
                              user_type = "user", 
                              start = "2016100100", 
                              end = "2019090100")
 wpviews %>%
-  filter(article == "George_Papadopoulos", views > 5000) %>% 
+  filter(article == "Paul_Manafort", views > 50000) %>% 
   arrange(desc(views))
 
 # spread (PIVOT) article values to columns
