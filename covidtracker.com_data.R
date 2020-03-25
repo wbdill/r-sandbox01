@@ -4,7 +4,12 @@ library(tidyverse)
 library(lubridate)
 
 #----- state populations -----
+# state_populations_2019.csv derrived from 2019 column in:
+# https://www2.census.gov/programs-surveys/popest/tables/2010-2019/state/totals/nst-est2019-01.xlsx
+# Download directly here: https://pastebin.com/UAhAPiYB
+
 state_pop <- read_csv("state_populations_2019.csv")
+state_pop <- read_csv("https://pastebin.com/raw/UAhAPiYB")
 state_pop %>% arrange(desc(population))
 
 #----- states daily -----
