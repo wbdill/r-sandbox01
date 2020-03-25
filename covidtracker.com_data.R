@@ -23,6 +23,18 @@ statesdaily %>%
        caption = "source: http://covidtracking.com/api/states/daily.csv")
 ggsave(filename = "covidtracker.com_southeast_states_tests.png")
 
+
+statesdaily2 %>%
+  filter(state %in% c("TN", "NY", "CA", "LA", "WA", "IL")) %>%
+  ggplot(aes(date, Positive, color = state)) +
+  geom_line() + 
+  labs(title = "Total Cumulative covid19 Cases",
+       y = "Total Tests",
+       caption = "source: http://covidtracking.com/api/states/daily.csv")
+
+ggsave(filename = "covidtracker.com_southeast_states_cases_NY.png")
+
+# factoring in population.
 statesdaily2 %>%
   filter(state %in% c("TN", "NY", "CA", "LA", "WA", "IL")) %>%
   mutate(CasesPerM = positive / (population / 1000000) ) %>%
