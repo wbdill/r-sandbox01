@@ -107,7 +107,7 @@ country_pop2 <- country_pop %>%
 
 #----- daily update v population -----
 
-jh_daily <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-24-2020.csv")
+jh_daily <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-25-2020.csv")
                       
 names(jh_daily) <- c("FIPS", "Admin2", "Province", "Country", "Date", "Lat", "Long", "Confirmed", "Deaths", "Recovered", "Active", "CombinedKey")
 
@@ -125,6 +125,6 @@ jh_daily %>%
          MortalityRate = round((Deaths / Confirmed)*100, digits = 1)) %>%
   select(Country, PopMillions, Confirmed, ConfirmedPerMill, Deaths, DeathsPerMill, MortalityRate) %>%
   arrange(desc(DeathsPerMill)) %>%
-  top_n(50) %>%
+  top_n(150) %>%
   write_csv(path = paste0(getwd(), "/output/covid19_high_confirmed_per_pop.csv"))
   
