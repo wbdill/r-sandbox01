@@ -1,4 +1,5 @@
 #----- R for Data Science (Hadley Wickham) -----
+# https://r4ds.had.co.nz
 #----- Chapter 5 -----
 rm(list = ls())
 ggplot(data = diamonds) +
@@ -57,7 +58,32 @@ ggplot(diamonds, aes(x = carat, y = price)) +
 
 #----- Chapter 6 Workflow: Projects -----
 # Ctrl + Shift F10 to restart R Studio
-# Ctrl + Shift S to return current script
+# Ctrl + Shift S to rerun current script
 
 getwd()
 
+#----- Chapter 10: Tibbles -----
+library(tidyverse)
+?tribble
+tribble( 
+  ~x, ~y, ~z,
+  "Hello", 4, 5.5,
+  "Test", 3, 8.8
+  )
+nycflights13::flights %>%
+  print(n = 10, width = Inf)
+
+?tibble
+df <- tibble(
+  x = runif(5),
+  y = rnorm(5)
+)
+df$x
+?tibble::enframe
+enframe(5:8)
+
+#---- Chapter 11: Data Import -----
+read_csv("a,b,c\n1,2,3\n4,5,6")  # skip = n, na = "-"
+
+x <- parse_integer(c("123", "345", "abc", "123.45"))
+problems(x)

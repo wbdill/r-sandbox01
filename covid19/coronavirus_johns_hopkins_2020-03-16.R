@@ -95,8 +95,8 @@ jh_country %>%
        caption = "Source: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
 ggsave(filename = paste0(getwd(), "/covid19_deaths_by_country.png"), width = 10, height = 6, dpi = 120)
 
-ggsave(filename = paste0(getwd(), "/covid19_by_country.png"), width = 10, height = 6, dpi = 120)
-jh_country %>% filter(Country %in% c("Italy", "Iran", "US", "Spain", "Germany", "China")) %>% arrange(desc(Date), Country)
+
+#jh_country %>% filter(Country %in% c("Italy", "Iran", "US", "Spain", "Germany", "China")) %>% arrange(desc(Date), Country)
 
 #----- Country populations -----
 
@@ -109,7 +109,7 @@ country_pop2 <- country_pop %>%
 
 #----- daily update v population -----
 
-jh_daily <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-22-2020.csv")
+jh_daily <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-24-2020.csv")
                       
 names(jh_daily) <- c("Province", "Country", "Date", "Confirmed", "Deaths", "Recovered", "Lat", "Long")
 
