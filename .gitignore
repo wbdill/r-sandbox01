@@ -24,3 +24,4 @@ $RECYCLE.BIN/
 .RData
 .Rhistory
 .Rproj.user/
+*.pper
