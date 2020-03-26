@@ -11,31 +11,29 @@
 library(tidyverse)
 library(lubridate)
 #setwd("C:/Users/brian.dill/Downloads/")
-setwd("C:/Users/bdill/Downloads/")
+
 
 #----- Read in data -----
-jhconfirmed <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv")
-jhdeaths <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv")
-jhrecovered <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv")
-jhcountries <- jhconfirmed %>% select(Province.State, Country.Region, Lat, Long)
+jhconfirmed <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv")
+jhdeaths <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv")
+jhrecovered <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv")
+
+jhcountries <- jhconfirmed %>% select(`Province/State`, `Country/Region`, Lat, Long)
 names(jhcountries) <- c("Province", "Country", "Lat", "Long")
 
 #----- data wrangle -----
 jhconfirmed2 <- select(jhconfirmed, -Lat, -Long) %>%
-  gather(key = "date", value = "confirmed", -Province.State, -Country.Region)
-jhconfirmed2$date <- str_replace(jhconfirmed2$date, "X", "")
+  gather(key = "date", value = "confirmed", -`Province/State`, -`Country/Region`)
 jhconfirmed2$date <- mdy(jhconfirmed2$date)
 names(jhconfirmed2) <- c("Province", "Country", "Date", "Confirmed")
 
 jhdeaths2 <- select(jhdeaths, -Lat, -Long) %>%
-  gather(key = "date", value = "deaths", -Province.State, -Country.Region)
-jhdeaths2$date <- str_replace(jhdeaths2$date, "X", "")
+  gather(key = "date", value = "deaths", -`Province/State`, -`Country/Region`)
 jhdeaths2$date <- mdy(jhdeaths2$date)
 names(jhdeaths2) <- c("Province", "Country", "Date", "Deaths")
 
 jhrecovered2 <- select(jhrecovered, -Lat, -Long) %>%
-  gather(key = "date", value = "recovered", -Province.State, -Country.Region)
-jhrecovered2$date <- str_replace(jhrecovered2$date, "X", "")
+  gather(key = "date", value = "recovered", -`Province/State`, -`Country/Region`)
 jhrecovered2$date <- mdy(jhrecovered2$date)
 names(jhrecovered2) <- c("Province", "Country", "Date", "Recovered")
 
@@ -54,10 +52,10 @@ jh_country <- jh %>%
   arrange(Country, desc(Date))
 
 #----- Save csv files -----
-write_csv(jh, path = paste0(getwd(), "/covid19_jh_timeseries.csv"))
-write_csv(jh_country, path = paste0(getwd(), "/covid19_jh_country_timeseries.csv"))
-write_csv(jhcountries, path = paste0(getwd(), "/covid19_jh_country_lat_long.csv"))
-write_csv(jh_gis, path = paste0(getwd(), "/covid19_jh_timeseris_with_latlong.csv"))
+#write_csv(jh, path = "output/covid19_jh_timeseries.csv")
+#write_csv(jh_country, path = "output/covid19_jh_country_timeseries.csv")
+#write_csv(jhcountries, path = "output/covid19_jh_country_lat_long.csv")
+#write_csv(jh_gis, path = "output/covid19_jh_timeseris_with_latlong.csv")
 
 
 #----- graphs -----
@@ -71,7 +69,7 @@ jh %>%
        subtitle = "Data Repository by Johns Hopkins CSSE",
        caption = "Source: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
 
-ggsave(filename = paste0(getwd(), "/covid19_by_china_province.png"), width = 10, height = 6, dpi = 120)
+ggsave(filename = paste0(getwd(), "/output/covid19_by_china_province.png"), width = 10, height = 6, dpi = 120)
 
 
 #----- Top countries -----
@@ -83,7 +81,7 @@ jh_country %>%
   labs(title = "Confirmed covid-19 cases by Country",
        subtitle = "Data Repository by Johns Hopkins CSSE",
        caption = "Source: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
-ggsave(filename = paste0(getwd(), "/covid19_cases_by_country.png"), width = 10, height = 6, dpi = 120)
+ggsave(filename = paste0(getwd(), "/output/covid19_cases_by_country.png"), width = 10, height = 6, dpi = 120)
 
 jh_country %>%
   filter(Country %in% c("Italy", "Iran", "US", "Spain", "Germany", "China")) %>%
@@ -93,7 +91,7 @@ jh_country %>%
   labs(title = "Confirmed covid-19 Deaths by Country",
        subtitle = "Data Repository by Johns Hopkins CSSE",
        caption = "Source: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
-ggsave(filename = paste0(getwd(), "/covid19_deaths_by_country.png"), width = 10, height = 6, dpi = 120)
+ggsave(filename = paste0(getwd(), "/output/covid19_deaths_by_country.png"), width = 10, height = 6, dpi = 120)
 
 
 #jh_country %>% filter(Country %in% c("Italy", "Iran", "US", "Spain", "Germany", "China")) %>% arrange(desc(Date), Country)
@@ -111,7 +109,7 @@ country_pop2 <- country_pop %>%
 
 jh_daily <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-24-2020.csv")
                       
-names(jh_daily) <- c("Province", "Country", "Date", "Confirmed", "Deaths", "Recovered", "Lat", "Long")
+names(jh_daily) <- c("FIPS", "Admin2", "Province", "Country", "Date", "Lat", "Long", "Confirmed", "Deaths", "Recovered", "Active", "CombinedKey")
 
 countries_of_interest <- c("US", "Italy", "China", "Canada", "Iran", "United Kingdom", "Germany", "France", "Spain", "Switzerland")
 
@@ -126,7 +124,7 @@ jh_daily %>%
          DeathsPerMill = round(Deaths / PopMillions, digits = 1),
          MortalityRate = round((Deaths / Confirmed)*100, digits = 1)) %>%
   select(Country, PopMillions, Confirmed, ConfirmedPerMill, Deaths, DeathsPerMill, MortalityRate) %>%
-  arrange(desc(ConfirmedPerMill)) %>%
+  arrange(desc(DeathsPerMill)) %>%
   top_n(50) %>%
-  write_csv(path = paste0(getwd(), "/covid19_high_confirmed_per_pop.csv"))
+  write_csv(path = paste0(getwd(), "/output/covid19_high_confirmed_per_pop.csv"))
   
