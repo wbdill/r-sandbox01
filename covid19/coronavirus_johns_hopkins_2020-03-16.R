@@ -67,7 +67,7 @@ jh %>%
   geom_line() +
   labs(title = "Confirmed covid-19 cases by Province in China",
        subtitle = "Data Repository by Johns Hopkins CSSE",
-       caption = "Source: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
+       caption = "Graph: @bdill  data: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
 
 ggsave(filename = paste0(getwd(), "/output/covid19_by_china_province.png"), width = 10, height = 6, dpi = 120)
 
@@ -80,7 +80,7 @@ jh_country %>%
   scale_y_log10(limits = c(1, 100000)) +  
   labs(title = "Confirmed covid-19 cases by Country",
        subtitle = "Data Repository by Johns Hopkins CSSE",
-       caption = "Source: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
+       caption = "Graph: @bdill  data: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
 ggsave(filename = paste0(getwd(), "/output/covid19_cases_by_country.png"), width = 10, height = 6, dpi = 120)
 
 jh_country %>%
@@ -90,7 +90,7 @@ jh_country %>%
   #scale_y_log10(limits = c(10, 10000)) +  
   labs(title = "Confirmed covid-19 Deaths by Country",
        subtitle = "Data Repository by Johns Hopkins CSSE",
-       caption = "Source: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
+       caption = "Graph: @bdill  data: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
 ggsave(filename = paste0(getwd(), "/output/covid19_deaths_by_country.png"), width = 10, height = 6, dpi = 120)
 
 
