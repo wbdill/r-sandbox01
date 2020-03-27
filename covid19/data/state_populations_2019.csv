@@ -1,53 +1,52 @@
-state_name,state_abbrev,population
-Alabama,AL,4903185
-Alaska,AK,731545
-Arizona,AZ,7278717
-Arkansas,AR,3017804
-California,CA,39512223
-Colorado,CO,5758736
-Connecticut,CT,3565287
-Delaware,DE,973764
-District of Columbia,DC,705749
-Florida,FL,21477737
-Georgia,GA,10617423
-Hawaii,HA,1415872
-Idaho,ID,1787065
-Illinois,IL,12671821
-Indiana,IN,6732219
-Iowa,IO,3155070
-Kansas,KS,2913314
-Kentucky,KY,4467673
-Louisiana,LA,4648794
-Maine,ME,1344212
-Maine,ME,1344212
-Maryland,MD,6045680
-Massachusetts,MA,6892503
-Michigan,MI,9986857
-Minnesota,MN,5639632
-Mississippi,MS,2976149
-Missouri,MO,6137428
-Montana,MT,1068778
-Nebraska,NE,1934408
-Nevada,NV,3080156
-New Hampshire,NH,1359711
-New Jersey,NJ,8882190
-New Mexico,NM,2096829
-New York,NY,19453561
-North Carolina,NC,10488084
-North Dakota,ND,762062
-Ohio,OH,11689100
-Oklahoma,OK,3956971
-Oregon,OR,4217737
-Pennsylvania,PA,12801989
-Rhode Island,RI,1059361
-South Carolina,SC,5148714
-South Dakota,SD,884659
-Tennessee,TN,6829174
-Texas,TX,28995881
-Utah,UT,3205958
-Vermont,VT,623989
-Virginia,VA,8535519
-Washington,WA,7614893
-West Virginia,WV,1792147
-Wisconsin,WI,5822434
-Wyoming,WY,578759
+state_name,state_abbrev,population,region
+Alabama,AL,4903185,south
+Alaska,AK,731545,pacific
+Arizona,AZ,7278717,west
+Arkansas,AR,3017804,south
+California,CA,39512223,west
+Colorado,CO,5758736,west
+Connecticut,CT,3565287,northeast
+Delaware,DE,973764,south
+District of Columbia,DC,705749,south
+Florida,FL,21477737,south
+Georgia,GA,10617423,south
+Hawaii,HA,1415872,pacific
+Idaho,ID,1787065,west
+Illinois,IL,12671821,midwest
+Indiana,IN,6732219,midwest
+Iowa,IO,3155070,midwest
+Kansas,KS,2913314,midwest
+Kentucky,KY,4467673,south
+Louisiana,LA,4648794,south
+Maine,ME,1344212,northeast
+Maryland,MD,6045680,south
+Massachusetts,MA,6892503,northeast
+Michigan,MI,9986857,midwest
+Minnesota,MN,5639632,midwest
+Mississippi,MS,2976149,south
+Missouri,MO,6137428,midwest
+Montana,MT,1068778,west
+Nebraska,NE,1934408,midwest
+Nevada,NV,3080156,west
+New Hampshire,NH,1359711,northeast
+New Jersey,NJ,8882190,northeast
+New Mexico,NM,2096829,west
+New York,NY,19453561,northeast
+North Carolina,NC,10488084,south
+North Dakota,ND,762062,midwest
+Ohio,OH,11689100,midwest
+Oklahoma,OK,3956971,south
+Oregon,OR,4217737,west
+Pennsylvania,PA,12801989,northeast
+Rhode Island,RI,1059361,northeast
+South Carolina,SC,5148714,south
+South Dakota,SD,884659,midwest
+Tennessee,TN,6829174,south
+Texas,TX,28995881,south
+Utah,UT,3205958,west
+Vermont,VT,623989,northeast
+Virginia,VA,8535519,south
+Washington,WA,7614893,west
+West Virginia,WV,1792147,south
+Wisconsin,WI,5822434,midwest
+Wyoming,WY,578759,west
