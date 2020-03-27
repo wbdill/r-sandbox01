@@ -9,7 +9,7 @@ library(lubridate)
 # Download directly here: https://pastebin.com/UAhAPiYB
 
 #----- state populations -----
-state_pop <- read_csv("https://pastebin.com/raw/UAhAPiYB")
+state_pop <- read_csv("https://raw.githubusercontent.com/wbdill/r-sandbox01/master/covid19/data/state_populations_2019.csv")
 
 #----- states current dataset -----
 states_curr <- read_csv("https://covidtracking.com/api/states.csv")
@@ -108,6 +108,12 @@ states_curr_withpop %>%
   select(state, region, population, cases = positive, tests = totalTestResults, deaths = death) %>%
   mutate(CasesPerM = round(cases / (population / 1000000), digits = 1),
          DeathsPerM = round(deaths / (population / 1000000), digits = 1),
-         TestsPerM = round(tests / (population / 1000000), digits = 1) ) %>%
+         TestsPerM = round(tests / (population / 1000000), digits = 0) ) %>%
+  filter(!is.na(region)) %>%
   arrange(desc(CasesPerM)) %>%
   write_csv(path = "output/covid19_states_per_pop.csv")
+
+
+states_curr_withpop %>%
+  select(state, region, population, cases = positive, tests = totalTestResults, deaths = death) %>%
+  View()
