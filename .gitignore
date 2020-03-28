@@ -24,5 +24,4 @@ $RECYCLE.BIN/
 .RData
 .Rhistory
 .Rproj.user/
-*.pper
-576F2504/
+output/
