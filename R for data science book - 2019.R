@@ -2,6 +2,7 @@
 # https://r4ds.had.co.nz
 #----- Chapter 5 -----
 rm(list = ls())
+library(tidyverse)
 ggplot(data = diamonds) +
   geom_bar(mapping = aes(x = cut))
 
@@ -87,3 +88,10 @@ read_csv("a,b,c\n1,2,3\n4,5,6")  # skip = n, na = "-"
 
 x <- parse_integer(c("123", "345", "abc", "123.45"))
 problems(x)
+
+read_csv("a,b,c\n1,2,.", na = ".")
+
+x <- parse_integer(c("123", "345", "abc", "123.45"))
+problems(x) # the set of import/parsing problems
+
+?read_csv2

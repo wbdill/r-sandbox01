@@ -37,14 +37,13 @@ jhrecovered2 <- select(jhrecovered, -Lat, -Long) %>%
 jhrecovered2$date <- mdy(jhrecovered2$date)
 names(jhrecovered2) <- c("Province", "Country", "Date", "Recovered")
 
-jh <- inner_join(jhconfirmed2, jhdeaths2) %>%
+jh_cdr <- inner_join(jhconfirmed2, jhdeaths2) %>%
   inner_join(jhrecovered2) %>%
   arrange(Country, Province, desc(Date))
 
-head(jh)
-jh_gis <- inner_join(jh, jhcountries)
+jh_gis <- inner_join(jh_cdr, jhcountries)
 
-jh_country <- jh %>%
+jh_country <- jh_cdr %>%
   group_by(Country, Date) %>%
   summarize(Confirmed = sum(Confirmed),
             Deaths= sum(Deaths),
@@ -107,7 +106,7 @@ country_pop2 <- country_pop %>%
 
 #----- daily update v population -----
 
-jh_daily <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-27-2020.csv")
+jh_daily <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-29-2020.csv")
                       
 names(jh_daily) <- c("FIPS", "Admin2", "Province", "Country", "Date", "Lat", "Long", "Confirmed", "Deaths", "Recovered", "Active", "CombinedKey")
 

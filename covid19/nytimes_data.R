@@ -24,13 +24,14 @@ MapState <- function(x) {
   state_abbrev <- x$state_abbrev
   
   top7_counties <- nyt_counties %>%
-    filter(state == state_name & date == "2020-03-25") %>%
+    filter(state == state_name & date == "2020-03-28") %>%
     top_n(7, cases) %>%
     arrange(desc(cases))
   
   gtitle = paste("Cumulative covid19 Cases - ", state_name)
   nyt_counties %>%
     filter(state == state_name & county %in% pull(top7_counties, county)) %>%
+    filter(date > '2020-03-07') %>%
     ggplot(aes(date, cases, color = county)) +
     geom_line(size = .7) +
     labs(title = gtitle,
@@ -38,7 +39,7 @@ MapState <- function(x) {
          y = "Cumulative Cases",
          caption = "graph: @bdill   data: https://github.com/nytimes/covid-19-data/blob/master/us-counties.csv")
   
-  filename <- paste("output/nyt_top7_counties_", state_abbrev, ".png")
+  filename <- paste("output/by_state/nyt_top7_counties_", state_abbrev, ".png")
   ggsave(filename = filename, width = 16, height = 10, units = "cm")
 }
 
@@ -75,3 +76,4 @@ nyt_counties %>%
   #top_n(7, cases) %>%
   arrange(desc(cases)) %>%
   View()
+

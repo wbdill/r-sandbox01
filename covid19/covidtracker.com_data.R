@@ -47,6 +47,7 @@ states_daily %>%
 
 ggsave(filename = "output/covidtracker.com_southeast_states_cases.png")
 
+
 #----- top states - TESTING -----
 top5_states_tests <- states_curr %>%
   arrange(desc(totalTestResults)) %>%
@@ -70,13 +71,10 @@ top5_states_cases <- states_curr %>%
   select(state, positive, positiveScore, datagrade = grade) %>%
   top_n(5, positive)
   
-
-pull(top5_states_cases, state) # pulls out states as a vector
-
 states_daily %>%
   filter(state %in% pull(top5_states_cases, state)) %>%
   ggplot(aes(date, positive, color = state)) +
-  geom_line() + 
+  geom_line(size = 1) + 
   labs(title = "Cumulative Cases covid19",
        subtitle = "Top 5 states",
        y = "Cumulative Cases",
@@ -86,7 +84,7 @@ ggsave(filename = "output/covidtracker.com_top5_states_cases_.png")
 
 
 
-#----- Big states cases per population. -----
+#----- top states CasesPerM -----
 top5_state_cases_per_pop <- states_curr_withpop %>%
   mutate(CasesPerM = positive / (population / 1000000)) %>%
   select(state, positive, CasesPerM, population) %>%
@@ -97,13 +95,34 @@ states_daily_withpop %>%
   filter(state %in% pull(top5_state_cases_per_pop, state)) %>%
   mutate(CasesPerM = positive / (population / 1000000) ) %>%
   ggplot(aes(date, CasesPerM, color = state)) +
-  geom_line() + 
+  geom_line(size = .5) + 
   labs(title = "Cumulative covid19 Cases per Million Pop",
        y = "Cumulative Cases per Million People",
        caption = "graph: @bdill   data: http://covidtracking.com/api/states/daily.csv")
+
 ggsave(filename = "output/covidtracker.com_top5_states_cases_per_mill.png")
 
 
+#----- top states TESTS PerM -----
+top5_state_tests_per_pop <- states_curr_withpop %>%
+  mutate(TestsPerM = totalTestResults / (population / 1000000)) %>%
+  select(state, totalTestResults, TestsPerM, population) %>%
+  top_n(5, TestsPerM) %>%
+  arrange(desc(TestsPerM))
+
+states_daily_withpop %>%
+  filter(state %in% pull(top5_state_tests_per_pop, state)) %>%
+  mutate(TestsPerM = totalTestResults / (population / 1000000) ) %>%
+  ggplot(aes(date, TestsPerM, color = state)) +
+  geom_line(size = .5) + 
+  labs(title = "Cumulative covid19 Tests per Million Pop",
+       y = "Cumulative Cases per Million People",
+       caption = "graph: @bdill   data: http://covidtracking.com/api/states/daily.csv")
+
+ggsave(filename = "output/covidtracker.com_top5_states_tests_per_mill.png")
+
+
+#----- spreadsheet output -----
 states_curr_withpop %>%
   select(state, region, population, cases = positive, tests = totalTestResults, deaths = death) %>%
   mutate(CasesPerM = round(cases / (population / 1000000), digits = 1),
@@ -111,7 +130,7 @@ states_curr_withpop %>%
          TestsPerM = round(tests / (population / 1000000), digits = 0) ) %>%
   filter(!is.na(region)) %>%
   arrange(desc(CasesPerM)) %>%
-  write_csv(path = "output/covid19_states_per_pop.csv")
+  write_csv(path = "output/covid19_states_tests_per_pop.csv")
 
 
 states_curr_withpop %>%
