@@ -1,5 +1,6 @@
 # https://covidtracking.com/api/
 # https://www2.census.gov/programs-surveys/popest/tables/2010-2019/state/totals/nst-est2019-01.xlsx
+rm(list = ls())
 library(tidyverse)
 library(lubridate)
 
@@ -47,12 +48,24 @@ states_daily %>%
 
 ggsave(filename = "output/covidtracker.com_southeast_states_cases.png")
 
+#----- Southeast states NEW CASES -----
+states_daily %>%
+  filter(state %in% c("TN", "KY", "LA", "AL", "GA")) %>%
+  ggplot(aes(date, positiveIncrease, color = state)) +
+  geom_smooth(se = TRUE) + 
+  labs(title = "covid19 Confirmed New Cases",
+       subtitle = "Southeastern States",
+       y = "New Cases",
+       caption = "graph: @bdill   data: http://covidtracking.com/api/states/daily.csv")
+
+ggsave(filename = "output/covidtracker.com_southeast_states_new_cases.png")
+
 
 #----- top states - TESTING -----
 top5_states_tests <- states_curr %>%
   arrange(desc(totalTestResults)) %>%
   select(state, totalTestResults) %>%
-  top_n(5, totalTestResults)
+  top_n(5, desc(totalTestResults))
 
 states_daily %>%
   filter(state %in% pull(top5_states_tests, state)) %>%

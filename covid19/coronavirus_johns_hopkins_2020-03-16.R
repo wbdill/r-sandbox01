@@ -94,6 +94,7 @@ ggsave(filename = paste0(getwd(), "/output/covid19_deaths_by_country.png"), widt
 
 
 #jh_country %>% filter(Country %in% c("Italy", "Iran", "US", "Spain", "Germany", "China")) %>% arrange(desc(Date), Country)
+jh_country %>% filter(Country %in% c("US")) %>% arrange(desc(Date), Country)
 
 #----- Country populations -----
 
