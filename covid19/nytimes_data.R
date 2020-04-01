@@ -3,6 +3,7 @@
 # https://github.com/nytimes/covid-19-data
 # https://en.wikipedia.org/wiki/FIPS_county_code
 # County populations: https://factfinder.census.gov/faces/tableservices/jsf/pages/productview.xhtml?src=bkmk
+rm(list = ls())
 library(tidyverse)
 
 state_pop <- read_csv("https://raw.githubusercontent.com/wbdill/r-sandbox01/master/covid19/data/state_populations_2019.csv")

@@ -26,31 +26,34 @@ states_curr_withpop <- left_join(states_curr, state_pop,   by = c("state" = "sta
 
 
 #----- Southeast states TESTS -----
-states_daily %>%
+states_daily_withpop %>%
   filter(state %in% c("TN", "KY", "MS", "LA", "AL", "GA")) %>%
-  ggplot(aes(date, totalTestResults, color = state)) +
+  mutate(TestsPerM = totalTestResults / (population / 1000000) ) %>%
+  #View()
+  ggplot(aes(date, TestsPerM, color = state)) +
   geom_line() + 
-  labs(title = "Total Cumulative covid19 Tests",
+  labs(title = "Tests per Million covid19",
        subtitle = "Southeastern States",
-       y = "Cumulative Tests",
+       y = "Cumulative Tests per Million",
        caption = "graph: @bdill   data: http://covidtracking.com/api/states/daily.csv")
-ggsave(filename = "covidtracker.com_southeast_states_tests.png", path = "output")
+ggsave(filename = "covidtracker.com_southeast_states_tests_per_pop.png", path = "output")
 
 #----- Southeast states CASES -----
-states_daily %>%
+states_daily_withpop %>%
   filter(state %in% c("TN", "KY", "MS", "LA", "AL", "GA")) %>%
-  ggplot(aes(date, positive, color = state)) +
+  mutate(CasesPerM = positive / (population / 1000000) ) %>%
+  ggplot(aes(date, CasesPerM, color = state)) +
   geom_line() + 
-  labs(title = "Total Cumulative covid19 Confirmed Cases",
+  labs(title = "Cumulative Cases per Million - covid19",
        subtitle = "Southeastern States",
-       y = "Cumulative Cases",
+       y = "Cumulative Cases per Millions",
        caption = "graph: @bdill   data: http://covidtracking.com/api/states/daily.csv")
 
-ggsave(filename = "output/covidtracker.com_southeast_states_cases.png")
+ggsave(filename = "output/covidtracker.com_southeast_states_cases_per_pop.png")
 
 #----- Southeast states NEW CASES -----
 states_daily %>%
-  filter(state %in% c("TN", "KY", "LA", "AL", "GA")) %>%
+  filter(state %in% c("TN", "KY", "LA", "AL", "GA", "MS")) %>%
   ggplot(aes(date, positiveIncrease, color = state)) +
   geom_smooth(se = TRUE) + 
   labs(title = "covid19 Confirmed New Cases",
@@ -65,7 +68,7 @@ ggsave(filename = "output/covidtracker.com_southeast_states_new_cases.png")
 top5_states_tests <- states_curr %>%
   arrange(desc(totalTestResults)) %>%
   select(state, totalTestResults) %>%
-  top_n(5, desc(totalTestResults))
+  top_n(5, totalTestResults)
 
 states_daily %>%
   filter(state %in% pull(top5_states_tests, state)) %>%

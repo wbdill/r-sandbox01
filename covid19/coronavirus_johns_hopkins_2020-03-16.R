@@ -107,7 +107,7 @@ country_pop2 <- country_pop %>%
 
 #----- daily update v population -----
 
-jh_daily <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-29-2020.csv")
+jh_daily <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-30-2020.csv")
                       
 names(jh_daily) <- c("FIPS", "Admin2", "Province", "Country", "Date", "Lat", "Long", "Confirmed", "Deaths", "Recovered", "Active", "CombinedKey")
 
@@ -128,3 +128,19 @@ jh_daily %>%
   top_n(150) %>%
   write_csv(path = "output/covid19_high_confirmed_per_pop.csv")
   
+
+
+#----- Sweden, Denmark, Norway -----
+jh_country %>%
+  inner_join(country_pop2) %>%
+  filter(Country %in% c("Sweden", "Denmark", "Norway")) %>%
+  filter(Date >= "2020-03-10") %>%
+  mutate(DeathsPerThou = Deaths / (pop / 1000) * 100) %>%
+  ggplot(aes(x = Date, y = DeathsPerThou, color = Country)) +
+  geom_line(size = .7) +
+  labs(title = "covid-19 Cases per Thousand Population by Country",
+       subtitle = "Data Repository by Johns Hopkins CSSE",
+       caption = "Graph: @bdill  data: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
+
+ggsave(filename = "output/covid19_deaths_per_pop_by_country_sweden.png", width = 8, height = 5, dpi = 120)
+
