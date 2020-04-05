@@ -35,7 +35,9 @@ states_daily_withpop %>%
   labs(title = "Tests per Million covid19",
        subtitle = "Southeastern States",
        y = "Cumulative Tests per Million",
-       caption = "graph: @bdill   data: http://covidtracking.com/api/states/daily.csv")
+       caption = "graph: @bdill   data: http://covidtracking.com/api/states/daily.csv"
+       )
+
 ggsave(filename = "covidtracker.com_southeast_states_tests_per_pop.png", path = "output")
 
 #----- Southeast states CASES per M -----
@@ -44,10 +46,12 @@ states_daily_withpop %>%
   mutate(CasesPerM = positive / (population / 1000000) ) %>%
   ggplot(aes(date, CasesPerM, color = state)) +
   geom_line(size = .5) + 
+  #scale_y_log10() +
   labs(title = "Cumulative Cases per Million - covid19",
        subtitle = "Southeastern States",
        y = "Cumulative Cases per Millions",
-       caption = "graph: @bdill   data: http://covidtracking.com/api/states/daily.csv")
+       caption = "graph: @bdill   data: http://covidtracking.com/api/states/daily.csv"
+       )
 
 ggsave(filename = "output/covidtracker.com_southeast_states_cases_per_pop.png")
 

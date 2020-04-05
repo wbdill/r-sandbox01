@@ -117,7 +117,6 @@ jh_country %>%
   mutate(CasesPerM = Confirmed / (pop / 1000000)) %>%
   ggplot(aes(x = Date, y = CasesPerM, color = Country)) +
   geom_line(size = 1) +
-  #  scale_y_log10() +  
   labs(title = "covid-19 CASES Per Million by Country",
        subtitle = "Data Repository by Johns Hopkins CSSE",
        caption = "Graph: @bdill  data: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
@@ -131,11 +130,12 @@ jh_country %>%
   mutate(DeathsPerM = Deaths / (pop / 1000000)) %>%
   ggplot(aes(x = Date, y = DeathsPerM, color = Country)) +
   geom_line(size = 1) +
-  #  scale_y_log10() +  
   labs(title = "covid-19 DEATHS Per Million by Country",
        subtitle = "Data Repository by Johns Hopkins CSSE",
-       caption = "Graph: @bdill  data: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
-ggsave(filename = paste0(getwd(), "/output/covid19_country_per_m_deaths.png"), width = 10, height = 6, dpi = 120)
+       caption = "Graph: @bdill  data: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series"
+       )
+
+ggsave(filename = "output/covid19_country_per_m_deaths.png", width = 10, height = 6, dpi = 120)
 
 
 #----- top countries New cases -----
@@ -156,20 +156,15 @@ jh_country %>%
   labs(title = "covid-19 NEW CASES per capita by Country",
        subtitle = "Data Repository by Johns Hopkins CSSE",
        y = "New Cases Per Million",
-       caption = "Graph: @bdill  data: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
+       caption = "Graph: @bdill  data: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series"
+       )
 
-ggsave(filename = paste0(getwd(), "/output/covid19_country_per_m_new_cases.png"), width = 10, height = 6, dpi = 120)
-
-group_by(county, state) %>%
-  arrange(county, state, date) %>%
-mutate(prev = lag(cases, n = 1),
-       delta = cases - prev) %>%
-
+ggsave(filename = "output/covid19_country_per_m_new_cases.png", width = 10, height = 6, dpi = 120)
 
 
 #----- daily update v population -----
 
-jh_daily <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-02-2020.csv")
+jh_daily <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-03-2020.csv")
                       
 names(jh_daily) <- c("FIPS", "Admin2", "Province", "Country", "Date", "Lat", "Long", "Confirmed", "Deaths", "Recovered", "Active", "CombinedKey")
 
@@ -188,10 +183,10 @@ jh_daily %>%
   select(Country, PopMillions, Confirmed, ConfirmedPerMill, Deaths, DeathsPerMill, MortalityRate) %>%
   arrange(desc(ConfirmedPerMill)) %>%
   top_n(150) %>%
-  write_csv(path = "output/covid19_countries_high_confirmed_per_pop.csv")
+  write_csv(path = "output/jh_covid19_countries_CDM_per_pop.csv")
   
 
-#----- JH State/County level data -----
+#----- JH State/County level data (not used) -----
 
 counties_pop <- read_csv("data/counties_pop_census_2018.csv")
 counties_pop2 <- counties_pop %>% select(county, state, pop = pop_2018)
