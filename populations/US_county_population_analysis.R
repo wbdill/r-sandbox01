@@ -42,8 +42,6 @@ counties_net_updown <- counties_pop %>%
   arrange(desc(counties_net)) %>%
   ungroup()
 
-
-
 counties_net_updown %>%
   top_n(7, counties_net) %>%
   arrange(desc(counties_net)) %>%
@@ -55,3 +53,12 @@ counties_net_updown %>%
        subtitle = "Counties with: > 5% change and > 1000 population",
        x = "",
        y = "Counties")
+
+
+#----- TN Counties -----
+counties_pop %>%
+  filter(state == "Tennessee") %>%
+  mutate(pct_chg = round((pop_2018 - pop_2010) / pop_2010 * 100, digits = 2)) %>%
+  select(county, state, pop_2010, pop_2018, pct_chg) %>%
+  arrange(desc(pct_chg)) %>%
+  write_csv("output/tn_counties.csv")

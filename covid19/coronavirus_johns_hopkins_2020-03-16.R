@@ -6,7 +6,7 @@
 # https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-15-2020.csv
 # https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series
 # https://datahub.io/JohnSnowLabs/population-figures-by-country
-# rm(list = ls())
+rm(list = ls())
 #library(data.table)
 library(tidyverse)
 library(lubridate)
@@ -41,7 +41,7 @@ jh_cdr <- inner_join(jhconfirmed2, jhdeaths2) %>%
   inner_join(jhrecovered2) %>%
   arrange(Country, Province, desc(Date))
 
-jh_gis <- inner_join(jh_cdr, jhcountries)
+#jh_gis <- inner_join(jh_cdr, jhcountries)
 
 jh_country <- jh_cdr %>%
   group_by(Country, Date) %>%
@@ -60,7 +60,7 @@ jh_country <- jh_cdr %>%
 #----- graphs -----
 
 #----- China by province -----
-jh %>%
+jh_cdr %>%
   filter(Country %in% c("China")) %>%
   ggplot(aes(x = Date, y = Confirmed, color = Province)) +
   geom_line() +
@@ -71,21 +71,25 @@ jh %>%
 ggsave(filename = paste0(getwd(), "/output/covid19_by_china_province.png"), width = 10, height = 6, dpi = 120)
 
 
-#----- Top countries -----
+#----- Top countries CASES -----
 jh_country %>%
-  filter(Country %in% c("Italy", "Iran", "US", "United Kingdom", "Spain", "Germany", "China")) %>%
+  filter(Country %in% c("Italy", "Iran", "US", "Spain", "Spain", "Germany", "China", "France")) %>%
   ggplot(aes(x = Date, y = Confirmed, color = Country)) +
-  geom_line() +
-  scale_y_log10(limits = c(1, 100000)) +  
+  geom_line(size = .7) +
+#  scale_y_log10() +  
   labs(title = "covid-19 Cases by Country",
        subtitle = "Data Repository by Johns Hopkins CSSE",
        caption = "Graph: @bdill  data: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
-ggsave(filename = paste0(getwd(), "/output/covid19_cases_by_country.png"), width = 10, height = 6, dpi = 120)
 
+ggsave(filename = "output/covid19_cases_by_country.png", width = 10, height = 6, dpi = 120)
+
+
+#----- Top countries DEATHS -----
 jh_country %>%
-  filter(Country %in% c("Italy", "Iran", "US", "United Kingdom", "Spain", "Germany", "China")) %>%
+  filter(Country %in% c("Italy", "Iran", "US", "Spain", "Spain", "Germany", "China", "France")) %>%
+  filter(Date >= "2020-03-01") %>%
   ggplot(aes(x = Date, y = Deaths, color = Country)) +
-  geom_line() +
+  geom_line(size = 1) +
   #scale_y_log10(limits = c(10, 10000)) +  
   labs(title = "covid-19 Deaths by Country",
        subtitle = "Data Repository by Johns Hopkins CSSE",
@@ -105,13 +109,71 @@ country_pop2 <- country_pop %>%
                              Country == "Iran, Islamic Rep." ~ "Iran",
                              TRUE ~ Country))
 
+#----- top countries CASES per M -----
+jh_country %>%
+  inner_join(country_pop2) %>%
+  filter(Country %in% c("Italy", "Iran", "US", "Spain", "Spain", "Germany", "China", "France")) %>%
+  filter(Date >= "2020-03-01") %>%
+  mutate(CasesPerM = Confirmed / (pop / 1000000)) %>%
+  ggplot(aes(x = Date, y = CasesPerM, color = Country)) +
+  geom_line(size = 1) +
+  #  scale_y_log10() +  
+  labs(title = "covid-19 CASES Per Million by Country",
+       subtitle = "Data Repository by Johns Hopkins CSSE",
+       caption = "Graph: @bdill  data: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
+ggsave(filename = "output/covid19_country_per_m_cases.png", width = 10, height = 6, dpi = 120)
+
+#----- top countries DEATHS per M -----
+jh_country %>%
+  inner_join(country_pop2) %>%
+  filter(Country %in% c("Italy", "Iran", "US", "Spain", "Spain", "Germany", "China", "France")) %>%
+  filter(Date >= "2020-03-01") %>%
+  mutate(DeathsPerM = Deaths / (pop / 1000000)) %>%
+  ggplot(aes(x = Date, y = DeathsPerM, color = Country)) +
+  geom_line(size = 1) +
+  #  scale_y_log10() +  
+  labs(title = "covid-19 DEATHS Per Million by Country",
+       subtitle = "Data Repository by Johns Hopkins CSSE",
+       caption = "Graph: @bdill  data: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
+ggsave(filename = paste0(getwd(), "/output/covid19_country_per_m_deaths.png"), width = 10, height = 6, dpi = 120)
+
+
+#----- top countries New cases -----
+jh_country %>%
+  inner_join(country_pop2) %>%
+  filter(Country %in% c("Italy", "Iran", "US", "Spain", "Spain", "Germany", "China", "France")) %>%
+  filter(Date >= "2020-03-01") %>%
+  group_by(Country) %>%
+  arrange(Country, Date) %>%
+  mutate(prev = lag(Confirmed, n = 1),
+         delta = Confirmed - prev,
+         deltaPerM = delta / (pop / 1000000)) %>%
+  #View()
+  ggplot(aes(x = Date, y = deltaPerM, color = Country)) +
+  #geom_line(size = 1) +
+  geom_smooth(size = 1) +
+  #  scale_y_log10() +  
+  labs(title = "covid-19 NEW CASES per capita by Country",
+       subtitle = "Data Repository by Johns Hopkins CSSE",
+       y = "New Cases Per Million",
+       caption = "Graph: @bdill  data: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
+
+ggsave(filename = paste0(getwd(), "/output/covid19_country_per_m_new_cases.png"), width = 10, height = 6, dpi = 120)
+
+group_by(county, state) %>%
+  arrange(county, state, date) %>%
+mutate(prev = lag(cases, n = 1),
+       delta = cases - prev) %>%
+
+
+
 #----- daily update v population -----
 
-jh_daily <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-30-2020.csv")
+jh_daily <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-02-2020.csv")
                       
 names(jh_daily) <- c("FIPS", "Admin2", "Province", "Country", "Date", "Lat", "Long", "Confirmed", "Deaths", "Recovered", "Active", "CombinedKey")
 
-countries_of_interest <- c("US", "Italy", "China", "Canada", "Iran", "United Kingdom", "Germany", "France", "Spain", "Switzerland")
+countries_of_interest <- c("US", "Italy", "China", "Canada", "Iran", "Switzerland", "Germany", "France", "Spain", "Switzerland")
 
 jh_daily %>%
   #filter(Country %in% countries_of_interest ) %>%
@@ -126,11 +188,49 @@ jh_daily %>%
   select(Country, PopMillions, Confirmed, ConfirmedPerMill, Deaths, DeathsPerMill, MortalityRate) %>%
   arrange(desc(ConfirmedPerMill)) %>%
   top_n(150) %>%
-  write_csv(path = "output/covid19_high_confirmed_per_pop.csv")
+  write_csv(path = "output/covid19_countries_high_confirmed_per_pop.csv")
   
 
+#----- JH State/County level data -----
 
-#----- Sweden, Denmark, Norway -----
+counties_pop <- read_csv("data/counties_pop_census_2018.csv")
+counties_pop2 <- counties_pop %>% select(county, state, pop = pop_2018)
+
+
+# this dataset appears to be unreliable.  It has several instances of the cumulative cases dropping
+# jh_county <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv")
+
+jh_county2 <- jh_county %>%
+  gather(key = date, value = cases, ends_with("20")) %>%
+  select(county = Admin2, state = Province_State, date, cases)
+jh_county2$date <- mdy(jh_county2$date)
+
+jh_county2 %>%
+  filter(state == "Tennessee" & county %in% c("Williamson", "Davidson", "Shelby")) %>%
+  filter(date > '2020-03-01') %>%
+  group_by(county, state) %>%
+  arrange(county, state, date) %>%
+  mutate(prev = lag(cases, n = 1),
+         delta = cases - prev) %>%
+  ungroup() %>%
+  View()
+  ggplot(aes(date, delta, group = county, color = county )) +
+  #geom_smooth()
+  geom_line()  
+  
+  ?geom_smooth
+
+
+jh_county2 %>%
+  inner_join(counties_pop2) %>%
+  filter(state == "Tennessee" & county %in% c("Williamson", "Davidson", "Shelby")) %>%
+  filter(date > '2020-03-05') %>%
+  mutate(CasesPerM = cases / (pop / 1000000)) %>%
+  ggplot(aes(date, CasesPerM, group = county, color = county )) +
+  geom_line()
+  View()
+
+#----- Sweden, Denmark, Norway one-off -----
 jh_country %>%
   inner_join(country_pop2) %>%
   filter(Country %in% c("Sweden", "Denmark", "Norway")) %>%
