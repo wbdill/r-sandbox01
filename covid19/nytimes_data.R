@@ -73,8 +73,8 @@ ggsave(filename = "output/nytimes_top7_tn_counties.png", width = 16, height = 10
 
 
 nyt_counties %>%
-  filter(state == "Tennessee" & date == "2020-03-25") %>%
+  filter(state %in% c("Mississippi") & county %in% c("Warren", "Lowndes", "Monroe", "Hinds") & date > "2020-03-14") %>%
   #top_n(7, cases) %>%
-  arrange(desc(cases)) %>%
+  arrange(desc(county, date)) %>%
   View()
 
