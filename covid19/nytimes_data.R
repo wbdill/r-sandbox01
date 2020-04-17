@@ -15,13 +15,13 @@ counties_pop <- read_csv("data/PEP_2018_PEPANNRES.csv", col_types = "ccciiiiiiii
 names(counties_pop) <- c("geo_id", "fips_code", "county", "census_2010", "est_base_2010", "pop_2010", "pop_2011", "pop_2012", "pop_2013", "pop_2014", "pop_2015", "pop_2016", "pop_2017", "pop_2018" )
 counties_pop <- separate(counties_pop, county, c("county", "state"), sep = ", ")
 counties_pop$county <- str_replace(counties_pop$county, " County", "")
-write_csv(counties_pop, "data/counties_pop_census_2018.csv")
+#write_csv(counties_pop, "data/counties_pop_census_2018.csv")
 
 
 #----- Function to generate graph for each state -----
 
 MapState <- function(x) {
-  state_name <- x$state_name
+  state_name <- x$state
   state_abbrev <- x$state_abbrev
   
   top7_counties <- nyt_counties %>%
@@ -146,7 +146,7 @@ graph_state_heatmaps("Kentucky")
 graph_state_heatmaps("Florida")
 
 
-nyt_counties %>%
+ nyt_counties %>%
   group_by(state, county, fips) %>%
   filter(state == "Tennessee") %>% 
   summarize(cases = max(cases),
@@ -155,4 +155,13 @@ nyt_counties %>%
   mutate(mortality = case_when(cases > 20 ~ deaths / cases * 100,
                                TRUE ~ NA_real_)) %>%
   arrange(desc(mortality)) %>%
-  View()
+  write_csv("output/tn_mortality_massaged_bdill.csv")
+
+nyt_counties %>%
+  group_by(state, county, fips) %>%
+  filter(state == p_state) %>% 
+  summarize(cases = max(cases),
+            deaths = max(deaths)) %>% 
+  mutate(mortality = case_when(cases > 20 ~ deaths / cases * 100,
+                               TRUE ~ NA_real_)) %>%
+  left_join(counties, by = c("fips" = "county_fips"))

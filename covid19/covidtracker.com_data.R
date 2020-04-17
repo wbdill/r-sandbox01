@@ -46,7 +46,7 @@ states_daily_withpop %>%
   mutate(CasesPerM = positive / (population / 1000000) ) %>%
   ggplot(aes(date, CasesPerM, color = state)) +
   geom_line(size = .5) + 
-  #scale_y_log10() +
+  scale_y_log10() +
   labs(title = "Cumulative Cases per Million - covid19",
        subtitle = "Southeastern States",
        y = "Cumulative Cases per Millions",
@@ -57,7 +57,7 @@ ggsave(filename = "output/covidtracker.com_southeast_states_cases_per_pop.png")
 
 #----- Southeast states NEW CASES -----
 states_daily %>%
-  filter(state %in% c("TN", "KY", "LA", "AL", "GA", "MS", "FL", "TX")) %>%
+  filter(state %in% c("TN", "KY", "LA", "AL", "GA", "MS", "FL", "TX", "AR")) %>%
   ggplot(aes(date, positiveIncrease, color = state)) +
   geom_smooth(se = TRUE, size = .5) + 
   labs(title = "covid19 Confirmed New Cases",
@@ -108,7 +108,7 @@ ggsave(filename = "output/covidtracker.com_top5_states_cases_.png")
 top5_state_cases_per_pop <- states_curr_withpop %>%
   mutate(CasesPerM = positive / (population / 1000000)) %>%
   select(state, positive, CasesPerM, population) %>%
-  top_n(5, CasesPerM) %>%
+  top_n(7, CasesPerM) %>%
   arrange(desc(CasesPerM))
 
 states_daily_withpop %>%
@@ -145,8 +145,9 @@ ggsave(filename = "output/covidtracker.com_top5_states_tests_per_mill.png")
 
 
 #----- spreadsheet output -----
+str(states_curr_withpop)
 states_curr_withpop %>%
-  select(state, region, population, cases = positive, tests = totalTestResults, deaths = death) %>%
+  select(state, region = census_region, population, cases = positive, tests = totalTestResults, deaths = death) %>%
   mutate(CasesPerM = round(cases / (population / 1000000), digits = 1),
          DeathsPerM = round(deaths / (population / 1000000), digits = 1),
          TestsPerM = round(tests / (population / 1000000), digits = 0) ) %>%

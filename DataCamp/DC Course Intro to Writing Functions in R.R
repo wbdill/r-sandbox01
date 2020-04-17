@@ -32,7 +32,7 @@ toss_coin <- function(n_flips, p_head = 0.5) {
 toss_coin(10, .4)  # Generate 10 coin tosses
 
 #-----
-install.packages("tidyverse")
+#install.packages("tidyverse")
 library(tidyverse)
 snake_river_visits <- readRDS("data/snake_river_visits.rds")
 
@@ -92,7 +92,7 @@ calc_harmonic_mean <- function(x, ...) {
     get_reciprocal()
 }
 #-----
-install.packages("assertive")
+#install.packages("assertive")
 library(assertive)
 
 do_foo <- function(x) {
@@ -303,11 +303,11 @@ bushels_per_acre_to_kgs_per_hectare <- function(bushels_per_acre, crop = c("barl
 }
 # View the corn dataset
 glimpse(corn)
+str(corn)
 
 corn %>%
-  # Add some columns
   mutate(
-    farmed_area_ha = acres_to_hectares(farmed_area_acres),  # Convert farmed area from acres to ha
+#    farmed_area_ha = acres_to_hectares(farmed_area_acres),  # Convert farmed area from acres to ha
     yield_kg_per_ha = bushels_per_acre_to_kgs_per_hectare(      # Convert yield from bushels/acre to kg/ha
       yield_bushels_per_acre,
       crop = "corn"
@@ -364,9 +364,9 @@ fortify_with_census_region(wheat) +
   facet_wrap(vars(census_region)) # Facet, wrapped by census region
 
 # add census_region to data sets (for some reason)
-corn <- fortify_with_census_region(corn)
-wheat <- fortify_with_census_region(wheat)
-barley <- fortify_with_census_region(barley)
+#corn <- fortify_with_census_region(corn)
+#wheat <- fortify_with_census_region(wheat)
+#barley <- fortify_with_census_region(barley)
 
 plot_yield_vs_year(corn) +
  facet_wrap(vars(census_region)) # Facet, wrapped by census region
@@ -395,3 +395,67 @@ predicted_responses <- predict(model, predict_this, type = "response")
 
 predict_this %>%
   mutate(predicted_responses = predicted_responses)  # put them into the original data frame for easy graphing
+
+# Run a generalized additive model of 
+# yield vs. smoothed year and census region
+gam(yield_kg_per_ha ~ s(year) + census_region, data = corn)
+
+# Wrap the model code into a function
+run_gam_yield_vs_year_by_region <- function(data) {
+  gam(yield_kg_per_ha ~ s(year) + census_region, data = data)
+}
+
+# Try it on the wheat dataset
+run_gam_yield_vs_year_by_region(wheat)
+
+#----- predictions -----
+wheat_model <- run_gam_yield_vs_year_by_region(wheat)
+corn_model <-  run_gam_yield_vs_year_by_region(corn)
+barley_model <-  run_gam_yield_vs_year_by_region(barley)
+
+census_regions <- c(
+  "New England",        "Middle Atlantic",    "East North Central",
+  "West North Central", "South Atlantic",     "East South Central",
+  "West South Central", "Mountain"  ,         "Pacific"
+)
+# Make predictions in 2050  
+predict_this <- data.frame(
+  year = 2050,
+  census_region = census_regions
+) 
+
+# Predict the yield
+pred_yield_kg_per_ha <- predict(corn_model, predict_this, type = "response")
+
+predict_this %>%
+  # Add the prediction as a column of predict_this 
+  mutate(pred_yield_kg_per_ha = pred_yield_kg_per_ha)
+
+# Wrap this prediction code into a function
+predict_yields <- function(model, year) {
+  predict_this <- data.frame(
+    year = year,
+    census_region = census_regions
+  ) 
+  pred_yield_kg_per_ha <- predict(model, predict_this, type = "response")
+  predict_this %>%
+    mutate(pred_yield_kg_per_ha = pred_yield_kg_per_ha)
+}
+
+# Try it on the wheat dataset
+predict_yields(wheat_model, 2050)
+predict_yields(corn_model, 2050)
+
+#----- all together now....
+fortified_barley <- barley %>% 
+  fortify_with_metric_units("barley") %>%   # Fortify with metric units
+  fortify_with_census_region()    # Fortify with census regions
+
+# See the result
+glimpse(fortified_barley)
+
+plot_yield_vs_year_by_region(fortified_barley)
+
+fortified_barley %>% 
+  run_gam_yield_vs_year_by_region() %>%  # Run a GAM of yield vs. year by region
+  predict_yields(2050)  # Make predictions of yields in 2050
