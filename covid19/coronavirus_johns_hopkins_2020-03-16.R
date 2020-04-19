@@ -20,7 +20,7 @@ jhcountries <- jhconfirmed %>% select(`Province/State`, `Country/Region`, Lat, L
 names(jhcountries) <- c("Province", "Country", "Lat", "Long")
 
 #----- Edit date for jh_daily ----->>>>>
-jh_daily <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-16-2020.csv")
+jh_daily <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-18-2020.csv")
 
 names(jh_daily) <- c("FIPS", "Admin2", "Province", "Country", "Date", "Lat", "Long", "Confirmed", "Deaths", "Recovered", "Active", "CombinedKey")
 
@@ -78,6 +78,7 @@ top7_countries_cases <- jh_cdr_by_country %>%
 
 jh_cdr_by_country %>%
   filter(Country %in% pull(top7_countries_cases, Country)) %>%
+  filter(Date >= "2020-03-01") %>%
   ggplot(aes(x = Date, y = Confirmed, color = Country)) +
   geom_line(size = 1) +
 #  scale_y_log10() +  
@@ -85,7 +86,7 @@ jh_cdr_by_country %>%
        subtitle = "Data Repository by Johns Hopkins CSSE",
        caption = "Graph: @bdill  data: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
 
-ggsave(filename = "output/covid19_cases_by_country.png", width = 10, height = 6, dpi = 120)
+ggsave(filename = "output/covid19_country_cases.png", width = 10, height = 6, dpi = 120)
 
 
 #----- Top countries DEATHS -----
@@ -103,7 +104,7 @@ jh_cdr_by_country %>%
   labs(title = "covid-19 Deaths by Country",
        subtitle = "Data Repository by Johns Hopkins CSSE",
        caption = "Graph: @bdill  data: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
-ggsave(filename = paste0(getwd(), "/output/covid19_deaths_by_country.png"), width = 10, height = 6, dpi = 120)
+ggsave(filename = paste0(getwd(), "/output/covid19_country_deaths.png"), width = 10, height = 6, dpi = 120)
 
 
 #jh_country %>% filter(Country %in% c("Italy", "Iran", "US", "Spain", "Germany", "China")) %>% arrange(desc(Date), Country)
@@ -187,8 +188,10 @@ ggsave(filename = "output/covid19_country_per_m_new_cases_per_m.png", width = 10
 
 #----- top countries New cases -----
 jh_cdr_by_country_per_pop %>%
+  filter(Country %in% c("Turkey", "France", "Germany", "Italy", "Spain", "United Kingdom", "US", "Belgium")) %>%
   ggplot(aes(x = Date, y = delta, color = Country)) +
   geom_smooth(size = 1) +
+  #geom_line() +
   labs(title = "covid-19 NEW CASES  by Country",
        subtitle = "Data Repository by Johns Hopkins CSSE",
        y = "New Cases",

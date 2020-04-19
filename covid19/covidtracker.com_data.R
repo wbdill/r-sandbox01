@@ -28,6 +28,7 @@ states_curr_withpop <- left_join(states_curr, state_pop,   by = c("state" = "sta
 #----- Southeast states TESTS per M -----
 states_daily_withpop %>%
   filter(state %in% c("TN", "KY", "MS", "LA", "AL", "GA", "FL", "TX")) %>%
+  filter(date > "2020-03-14") %>%
   mutate(TestsPerM = totalTestResults / (population / 1000000) ) %>%
   #View()
   ggplot(aes(date, TestsPerM, color = state)) +
@@ -43,10 +44,11 @@ ggsave(filename = "covidtracker.com_southeast_states_tests_per_pop.png", path = 
 #----- Southeast states CASES per M -----
 states_daily_withpop %>%
   filter(state %in% c("TN", "KY", "MS", "LA", "AL", "GA", "FL", "TX")) %>%
+  filter(date > "2020-03-14") %>%
   mutate(CasesPerM = positive / (population / 1000000) ) %>%
   ggplot(aes(date, CasesPerM, color = state)) +
   geom_line(size = .5) + 
-  scale_y_log10() +
+  #scale_y_log10() +
   labs(title = "Cumulative Cases per Million - covid19",
        subtitle = "Southeastern States",
        y = "Cumulative Cases per Millions",
@@ -76,6 +78,7 @@ top5_states_tests <- states_curr %>%
 
 states_daily %>%
   filter(state %in% pull(top5_states_tests, state)) %>%
+  filter(date > "2020-03-14") %>%
   ggplot(aes(date, totalTestResults, color = state)) +
   geom_line(size = 1) +
   labs(title = "Cumulative covid19 Tests",
@@ -93,6 +96,7 @@ top5_states_cases <- states_curr %>%
   
 states_daily %>%
   filter(state %in% pull(top5_states_cases, state)) %>%
+  filter(date > "2020-03-14") %>%
   ggplot(aes(date, positive, color = state)) +
   geom_line(size = 1) + 
   labs(title = "Cumulative Cases covid19",
@@ -100,7 +104,7 @@ states_daily %>%
        y = "Cumulative Cases",
        caption = "graph: @bdill   data: http://covidtracking.com/api/states/daily.csv")
 
-ggsave(filename = "output/covidtracker.com_top5_states_cases_.png")
+ggsave(filename = "output/covidtracker.com_top5_states_cases.png")
 
 
 
@@ -113,6 +117,7 @@ top5_state_cases_per_pop <- states_curr_withpop %>%
 
 states_daily_withpop %>%
   filter(state %in% pull(top5_state_cases_per_pop, state)) %>%
+  filter(date > "2020-03-14") %>%
   mutate(CasesPerM = positive / (population / 1000000) ) %>%
   ggplot(aes(date, CasesPerM, color = state)) +
   geom_line(size = 1) + 
@@ -133,6 +138,7 @@ top5_state_tests_per_pop <- states_curr_withpop %>%
 
 states_daily_withpop %>%
   filter(state %in% pull(top5_state_tests_per_pop, state)) %>%
+  filter(date > "2020-03-14") %>%
   mutate(TestsPerM = totalTestResults / (population / 1000000) ) %>%
   ggplot(aes(date, TestsPerM, color = state)) +
   geom_line(size = 1) + 
