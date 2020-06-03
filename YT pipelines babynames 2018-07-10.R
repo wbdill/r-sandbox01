@@ -11,11 +11,11 @@ babynames <- tbl_df(babynames)
 babynames
 babynames %>% select(-prop)
 
-
+setwd("C:/GitHub/r-sandbox01")
 #----- graphs of baby names over time -----
 #----- bunch of graphs of baby names over time -----
 ylbl = "Number of Births (thousands)"
-var_name <- "Carl"
+var_name <- "Karen"
 ctitle <- paste("Babies Born Named", var_name)
 
 babynames %>% 
@@ -25,6 +25,9 @@ babynames %>%
   labs(x = "Year", y = ylbl, title = ctitle) +
   scale_x_continuous(breaks = seq(1880, 2020, 10))
 
+
+ggsave(filename = paste0("output/babies_named_",var_name,".png"), width = 6, height = 4, dpi = 120)
+
 #Brian vs Ryan
 babynames %>% 
   filter(name %in% c("Brian", "Ryan"), sex == "M", year > 1950) %>%
@@ -32,6 +35,15 @@ babynames %>%
   geom_line() +
   labs(y = ylbl, title = "Births") +
   facet_grid(name~.)
+
+#Richard, Hillary, Karen
+babynames %>% 
+  filter( (name == "Richard" & sex == "M") | (name == "Hillary" & sex == "F") | (name == "Karen" & sex == "F")  | (name == "Peyton" & sex == "M"), year > 1940) %>%
+  ggplot(aes(year, n/1000, col = name)) + 
+  geom_line(size = 1) +
+  scale_y_log10() +
+  labs(y = ylbl, title = "Baby Names", caption = "graph @bdill  source: babynames R package (https://bit.ly/3apr8AQ)")
+ggsave(filename = paste0("output/babies_named_richard_hillary_karen.png"), width = 6, height = 4, dpi = 120)
 
 #Brian vs Tina
 babynames %>% 

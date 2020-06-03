@@ -20,7 +20,7 @@ jhcountries <- jhconfirmed %>% select(`Province/State`, `Country/Region`, Lat, L
 names(jhcountries) <- c("Province", "Country", "Lat", "Long")
 
 #----- Edit date for jh_daily ----->>>>>
-jh_daily <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-18-2020.csv")
+jh_daily <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/05-30-2020.csv")
 
 names(jh_daily) <- c("FIPS", "Admin2", "Province", "Country", "Date", "Lat", "Long", "Confirmed", "Deaths", "Recovered", "Active", "CombinedKey")
 
@@ -175,9 +175,10 @@ ggsave(filename = "output/covid19_country_per_m_deaths.png", width = 10, height 
 
 
 jh_cdr_by_country_per_pop %>%
-  filter(Country %in% c("Turkey", "France", "Germany", "Italy", "Spain", "United Kingdom", "US", "Belgium")) %>%
+  filter(Country %in% c("Chile", "Peru", "Brazil", "Italy", "Spain", "United Kingdom", "US", "Belgium")) %>%
   ggplot(aes(x = Date, y = deltaPerM, color = Country)) +
   geom_smooth(size = 1, se = FALSE) +
+  #geom_line() +
   labs(title = "covid-19 NEW CASES per capita by Country",
        subtitle = "Data Repository by Johns Hopkins CSSE",
        y = "New Cases Per Million",
@@ -188,7 +189,7 @@ ggsave(filename = "output/covid19_country_per_m_new_cases_per_m.png", width = 10
 
 #----- top countries New cases -----
 jh_cdr_by_country_per_pop %>%
-  filter(Country %in% c("Turkey", "France", "Germany", "Italy", "Spain", "United Kingdom", "US", "Belgium")) %>%
+  filter(Country %in% c("Brazil", "Chile", "Germany", "Peru", "United Kingdom", "US")) %>%
   ggplot(aes(x = Date, y = delta, color = Country)) +
   geom_smooth(size = 1) +
   #geom_line() +
