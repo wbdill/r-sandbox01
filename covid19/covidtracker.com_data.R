@@ -71,6 +71,37 @@ states_daily %>%
 ggsave(filename = "output/covidtracker.com_southeast_states_new_cases.png")
 
 
+#----- Misc states NEW CASES  -----
+states_daily_withpop %>%
+  filter(state %in% c("AL", "AR", "AZ", "FL", "TX")) %>%
+  ggplot(aes(date, positiveIncrease, color = state)) +
+  geom_smooth(se = TRUE, size = .5) + 
+  #geom_line(size = 1) + 
+  labs(title = "covid19 Confirmed New Cases",
+       subtitle = "Misc States",
+       y = "New Cases",
+       caption = "graph: @bdill   data: http://covidtracking.com/api/states/daily.csv")
+
+ggsave(filename = "output/covidtracker.com_misc_states_new_cases.png")
+
+
+#----- Misc states NEW CASES per M -----
+states_daily_withpop %>%
+  filter(state %in% c("AL", "AR", "AZ", "FL", "TX")) %>%
+#  select(state, positiveIncrease , population) %>%
+  mutate(new_per_pop = positiveIncrease / (population) * 1000000) %>%
+  ggplot(aes(date, new_per_pop, color = state)) +
+  geom_smooth(se = TRUE, size = .5) + 
+  #geom_line(size = 1) + 
+  labs(title = "covid19 Confirmed New Cases Per Million",
+       subtitle = "Misc States",
+       y = "New Cases per Mill",
+       caption = "graph: @bdill   data: http://covidtracking.com/api/states/daily.csv")
+
+ggsave(filename = "output/covidtracker.com_misc_states_new_cases_per_m.png")
+
+
+
 #----- top states - TESTING -----
 top5_states_tests <- states_curr %>%
   arrange(desc(totalTestResults)) %>%
@@ -166,3 +197,26 @@ states_curr_withpop %>%
 states_curr_withpop %>%
   select(state, region, population, cases = positive, tests = totalTestResults, deaths = death) %>%
   View()
+
+
+
+#----- Misc states NEW CASES per M -----
+MapState <- function(x) {
+  state_name <- x$state
+  state_abbrev <- x$state_abbrev
+  
+  gtitle = paste("New covid19 Cases Per Million - ", state_name)
+
+  states_daily_withpop %>%
+  filter(state == state_abbrev) %>%
+  mutate(new_per_pop = positiveIncrease / (population) * 1000000) %>%
+  ggplot(aes(date, new_per_pop, color = state)) +
+  geom_smooth(se = TRUE, size = .5) + 
+  labs(title = gtitle,
+       y = "New Cases per Mill",
+       caption = "graph: @bdill   data: http://covidtracking.com/api/states/daily.csv")
+
+  filename <- paste("output/by_state/new_per_pop/covidtracker.com_misc_states_new_cases_per_m.png", state_abbrev, ".png")
+  ggsave(filename = filename, width = 16, height = 10, units = "cm")
+}
+by(state_pop, 1:nrow(state_pop), MapState)
