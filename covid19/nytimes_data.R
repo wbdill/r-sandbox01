@@ -40,13 +40,95 @@ MapState <- function(x) {
          y = "Cumulative Cases",
          caption = "graph: @bdill   data: https://github.com/nytimes/covid-19-data/blob/master/us-counties.csv")
   
-  filename <- paste("output/by_state/nyt_top7_counties_", state_abbrev, ".png")
+  filename <- paste("output/by_state/cumcases_top_counties/nyt_top7_counties_", state_abbrev, ".png")
   ggsave(filename = filename, width = 16, height = 10, units = "cm")
 }
 
 by(state_pop, 1:nrow(state_pop), MapState)
 
 
+
+MapStateNewCases <- function(x) {
+  state_name <- x$state
+  state_abbrev <- x$state_abbrev
+  
+  gtitle = paste("COVID19: New Cases - ", state_name)
+  dat <- nyt_counties %>%
+    filter(state == state_name ) %>%  #& county %in% pull(top7_counties, county)
+    group_by(state, date) %>% 
+    select(date, state, cases) %>% 
+    mutate(cases = sum(cases)) %>% 
+    distinct() %>% 
+    group_by(state) %>% 
+    inner_join(state_pop, by = "state") %>% 
+    mutate(cases_per_m = cases / (population / 1000000), 
+           new_cases = cases - dplyr::lag(cases), 
+           new_cases_per_m = new_cases / (population / 1000000))
+    
+  ggplot(dat, aes(date, cases)) +
+    geom_line(size = .7) +
+    labs(title = gtitle,
+         subtitle = "",
+         y = "New Cases",
+         caption = "graph: @bdill   data: https://github.com/nytimes/covid-19-data/blob/master/us-counties.csv")
+  
+  filename <- paste("output/by_state/new_cases/nyt_new_cases_", state_abbrev, ".png")
+  ggsave(filename = filename, width = 16, height = 10, units = "cm")
+
+  ggplot(dat, aes(date, cases_per_m)) +
+    geom_line(size = .7) +
+    labs(title = gtitle,
+         subtitle = "",
+         y = "New Cases Per M",
+         caption = "graph: @bdill   data: https://github.com/nytimes/covid-19-data/blob/master/us-counties.csv")
+  
+  filename <- paste("output/by_state/new_cases_per_pop/nyt_new_cases_per_m", state_abbrev, ".png")
+  ggsave(filename = filename, width = 16, height = 10, units = "cm")  
+}
+
+by(state_pop, 1:nrow(state_pop), MapStateNewCases)
+
+#----- New Cases by state -----
+nyt_counties %>%
+  filter(date > "2020-04-01") %>% 
+  filter(state %in% c("California", "Arizona", "Texas", "Florida", "Georgia", "Oklahoma", "South Carolina")) %>% 
+  group_by(state, date) %>% 
+  select(date, state, cases) %>% 
+  mutate(cases = sum(cases)) %>% 
+  distinct() %>% 
+  group_by(state) %>% 
+  inner_join(state_pop, by = "state") %>% 
+  mutate(cases_per_m = cases / (population / 1000000), 
+         new_cases = cases - dplyr::lag(cases), 
+         new_cases_per_m = new_cases / (population / 1000000)) %>% 
+  ggplot(aes(date, new_cases, color = state)) +
+  geom_smooth(size = .7) +
+  labs(title = "COVID19: New Cases",
+       subtitle = "Top States",
+       y = "New Cases",
+       caption = "graph: @bdill   data: https://github.com/nytimes/covid-19-data/blob/master/us-counties.csv")
+ggsave(filename = "output/nytimes_new_cases_states.png", width = 16, height = 10, units = "cm")
+
+#----- New Cases per m by state -----
+nyt_counties %>%
+  filter(date > "2020-04-01") %>% 
+  filter(state %in% c("New York", "New Jersey", "Illinois", "Michigan", "Virginia", "Colorado")) %>% 
+  group_by(state, date) %>% 
+  select(date, state, cases) %>% 
+  mutate(cases = sum(cases)) %>% 
+  distinct() %>% 
+  group_by(state) %>% 
+  inner_join(state_pop, by = "state") %>% 
+  mutate(cases_per_m = cases / (population / 1000000), 
+         new_cases = cases - dplyr::lag(cases), 
+         new_cases_per_m = new_cases / (population / 1000000)) %>% 
+  ggplot(aes(date, new_cases_per_m, color = state)) +
+  geom_smooth(size = .7) +
+  labs(title = "COVID19: New Cases per M",
+       subtitle = "Blue States",
+       y = "New Cases Per Mill",
+       caption = "graph: @bdill   data: https://github.com/nytimes/covid-19-data/blob/master/us-counties.csv")
+ggsave(filename = "output/nytimes_new_cases_per_m_states_blue.png", width = 16, height = 10, units = "cm")
 
 #----- Manual EDA -----
 
@@ -55,7 +137,7 @@ nyt_counties %>%
   arrange(desc(date))
 
 top7_counties <- nyt_counties %>%
-  filter(state == "Tennessee" & date == "2020-03-25") %>%
+  filter(state == "Tennessee" & date == "2020-06-20") %>%
   top_n(7, cases) %>%
   arrange(desc(cases))
 
@@ -63,6 +145,7 @@ pull(top7_counties, county)
 
 nyt_counties %>%
   filter(state == "Tennessee" & county %in% pull(top7_counties, county)) %>%
+  filter(date > "2020-04-01") %>% 
   ggplot(aes(date, cases, color = county)) +
   geom_line(size = .7) +
   labs(title = "Cumulative covid19 Cases - Tennessee",
@@ -70,6 +153,7 @@ nyt_counties %>%
       y = "Cumulative Cases",
       caption = "graph: @bdill   data: https://github.com/nytimes/covid-19-data/blob/master/us-counties.csv")
 ggsave(filename = "output/nytimes_top7_tn_counties.png", width = 16, height = 10, units = "cm")
+
 
 
 nyt_counties %>%

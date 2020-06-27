@@ -20,7 +20,7 @@ jhcountries <- jhconfirmed %>% select(`Province/State`, `Country/Region`, Lat, L
 names(jhcountries) <- c("Province", "Country", "Lat", "Long")
 
 #----- Edit date for jh_daily ----->>>>>
-jh_daily <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/06-10-2020.csv")
+jh_daily <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/06-25-2020.csv")
 
 names(jh_daily) <- c("FIPS", "Admin2", "Province", "Country", "Date", "Lat", "Long", "Confirmed", "Deaths", "Recovered", "Active", "CombinedKey", "IncidenceRate", "CaseFatalityRatio")
 

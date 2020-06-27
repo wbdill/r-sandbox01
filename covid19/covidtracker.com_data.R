@@ -73,7 +73,7 @@ ggsave(filename = "output/covidtracker.com_southeast_states_new_cases.png")
 
 #----- Misc states NEW CASES  -----
 states_daily_withpop %>%
-  filter(state %in% c("AL", "AR", "AZ", "FL", "TX")) %>%
+  filter(state %in% c("AL", "AR", "AZ", "FL", "TX", "UT", "NC")) %>%
   ggplot(aes(date, positiveIncrease, color = state)) +
   geom_smooth(se = TRUE, size = .5) + 
   #geom_line(size = 1) + 
@@ -87,11 +87,11 @@ ggsave(filename = "output/covidtracker.com_misc_states_new_cases.png")
 
 #----- Misc states NEW CASES per M -----
 states_daily_withpop %>%
-  filter(state %in% c("AL", "AR", "AZ", "FL", "TX")) %>%
+  filter(state %in% c("AL", "AR", "AZ", "FL", "TX", "UT", "NC")) %>%
 #  select(state, positiveIncrease , population) %>%
   mutate(new_per_pop = positiveIncrease / (population) * 1000000) %>%
   ggplot(aes(date, new_per_pop, color = state)) +
-  geom_smooth(se = TRUE, size = .5) + 
+  geom_smooth(se = FALSE, size = .5) + 
   #geom_line(size = 1) + 
   labs(title = "covid19 Confirmed New Cases Per Million",
        subtitle = "Misc States",
