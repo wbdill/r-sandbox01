@@ -43,11 +43,15 @@ ggsave(filename = "covidtracker.com_southeast_states_tests_per_pop.png", path = 
 
 #----- Southeast states CASES per M -----
 states_daily_withpop %>%
-  filter(state %in% c("TN", "KY", "MS", "LA", "AL", "GA", "FL", "TX")) %>%
-  filter(date > "2020-03-14") %>%
+  filter(state %in% c("TN", "SC", "MS", "AZ", "GA", "FL", "TX", "LA")) %>%
+  filter(date > "2020-06-14") %>%
   mutate(CasesPerM = positive / (population / 1000000) ) %>%
+  #filter(CasesPerM > 15000) %>% 
+  #View()
   ggplot(aes(date, CasesPerM, color = state)) +
-  geom_line(size = .5) + 
+  geom_line(size = 1) + 
+  geom_point(size = 1) +
+  expand_limits(y = 0) +
   #scale_y_log10() +
   labs(title = "Cumulative Cases per Million - covid19",
        subtitle = "Southeastern States",
@@ -73,9 +77,9 @@ ggsave(filename = "output/covidtracker.com_southeast_states_new_cases.png")
 
 #----- Misc states NEW CASES  -----
 states_daily_withpop %>%
-  filter(state %in% c("AL", "AR", "AZ", "FL", "TX", "UT", "NC")) %>%
+  filter(state %in% c("GA", "SC", "AZ", "FL", "TX", "CA", "NC")) %>%
   ggplot(aes(date, positiveIncrease, color = state)) +
-  geom_smooth(se = TRUE, size = .5) + 
+  geom_smooth(se = TRUE, size = 1) + 
   #geom_line(size = 1) + 
   labs(title = "covid19 Confirmed New Cases",
        subtitle = "Misc States",
@@ -87,11 +91,11 @@ ggsave(filename = "output/covidtracker.com_misc_states_new_cases.png")
 
 #----- Misc states NEW CASES per M -----
 states_daily_withpop %>%
-  filter(state %in% c("AL", "AR", "AZ", "FL", "TX", "UT", "NC")) %>%
+  filter(state %in% c("GA", "SC", "AZ", "FL", "TX", "CA", "MS", "TN")) %>%
 #  select(state, positiveIncrease , population) %>%
   mutate(new_per_pop = positiveIncrease / (population) * 1000000) %>%
   ggplot(aes(date, new_per_pop, color = state)) +
-  geom_smooth(se = FALSE, size = .5) + 
+  geom_smooth(se = FALSE, size = 1) + 
   #geom_line(size = 1) + 
   labs(title = "covid19 Confirmed New Cases Per Million",
        subtitle = "Misc States",
@@ -124,7 +128,7 @@ ggsave(filename = "output/covidtracker.com_top5_testing_states.png")
 top5_states_cases <- states_curr %>%
   arrange(desc(positive)) %>%
   select(state, positive, positiveScore, datagrade = grade) %>%
-  top_n(5, positive)
+  top_n(7, positive)
   
 states_daily %>%
   filter(state %in% pull(top5_states_cases, state)) %>%

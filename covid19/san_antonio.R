@@ -17,7 +17,7 @@ sa %>%
   filter(Date > '2020-04-01') %>% 
   pivot_longer( cols = c("PosPatients", "COVIDnICU", "COVIDonVent", "DeathsCum", "AvailVent"), names_to = "var", values_to = "val") %>% 
   ggplot(aes(Date, val, group = var, col = var)) +
-  geom_point() +
+  geom_point(size = .5) +
   geom_line() +
   labs(title = "San Antonio",
        subtitle = "Hospitalized, ICU, Vent",

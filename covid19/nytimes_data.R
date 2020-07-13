@@ -4,7 +4,9 @@
 # https://en.wikipedia.org/wiki/FIPS_county_code
 # County populations: https://factfinder.census.gov/faces/tableservices/jsf/pages/productview.xhtml?src=bkmk
 rm(list = ls())
+install.packages("zoo")
 library(tidyverse)
+library(zoo)
 
 state_pop <- read_csv("https://raw.githubusercontent.com/wbdill/r-sandbox01/master/covid19/data/state_populations_2019.csv")
 nyt_counties <- read_csv("https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv")
@@ -47,7 +49,7 @@ MapState <- function(x) {
 by(state_pop, 1:nrow(state_pop), MapState)
 
 
-
+#----- New cases and New Cases per M
 MapStateNewCases <- function(x) {
   state_name <- x$state
   state_abbrev <- x$state_abbrev
@@ -63,35 +65,40 @@ MapStateNewCases <- function(x) {
     inner_join(state_pop, by = "state") %>% 
     mutate(cases_per_m = cases / (population / 1000000), 
            new_cases = cases - dplyr::lag(cases), 
-           new_cases_per_m = new_cases / (population / 1000000))
+           new_cases_per_m = new_cases / (population / 1000000),
+           movavg7 = rollmean(new_cases, 7, fill = NA, align="right"),
+           movavg7_per_m = rollmean(new_cases_per_m, 7, fill = NA, align="right"))
     
-  ggplot(dat, aes(date, cases)) +
-    geom_line(size = .7) +
+    ggplot(dat, aes(date, new_cases)) +
+    geom_col(aes(date, new_cases), fill = "blue", alpha = 0.3) +
+    geom_line(aes(date, movavg7), color = "red") +
     labs(title = gtitle,
-         subtitle = "",
+         subtitle = "7 Day Moving Average in red",
          y = "New Cases",
          caption = "graph: @bdill   data: https://github.com/nytimes/covid-19-data/blob/master/us-counties.csv")
   
   filename <- paste("output/by_state/new_cases/nyt_new_cases_", state_abbrev, ".png")
   ggsave(filename = filename, width = 16, height = 10, units = "cm")
 
-  ggplot(dat, aes(date, cases_per_m)) +
-    geom_line(size = .7) +
+  ggplot(dat ) +
+    geom_col(aes(date, new_cases_per_m), fill = "blue", alpha = 0.3) +
+    geom_line(aes(date, movavg7_per_m), color = "red") +
     labs(title = gtitle,
-         subtitle = "",
+         subtitle = "7 Day Moving Average in red",
          y = "New Cases Per M",
          caption = "graph: @bdill   data: https://github.com/nytimes/covid-19-data/blob/master/us-counties.csv")
   
-  filename <- paste("output/by_state/new_cases_per_pop/nyt_new_cases_per_m", state_abbrev, ".png")
+  filename <- paste("output/by_state/new_cases_per_pop/nyt_new_cases_per_m_", state_abbrev, ".png")
   ggsave(filename = filename, width = 16, height = 10, units = "cm")  
 }
 
 by(state_pop, 1:nrow(state_pop), MapStateNewCases)
 
-#----- New Cases by state -----
+
+#---
+state_name <- "Tennessee"
 nyt_counties %>%
-  filter(date > "2020-04-01") %>% 
-  filter(state %in% c("California", "Arizona", "Texas", "Florida", "Georgia", "Oklahoma", "South Carolina")) %>% 
+  filter(state == state_name ) %>%  #& county %in% pull(top7_counties, county)
   group_by(state, date) %>% 
   select(date, state, cases) %>% 
   mutate(cases = sum(cases)) %>% 
@@ -100,10 +107,32 @@ nyt_counties %>%
   inner_join(state_pop, by = "state") %>% 
   mutate(cases_per_m = cases / (population / 1000000), 
          new_cases = cases - dplyr::lag(cases), 
-         new_cases_per_m = new_cases / (population / 1000000)) %>% 
-  ggplot(aes(date, new_cases, color = state)) +
+         new_cases_per_m = new_cases / (population / 1000000),
+         ma7 = rollmean(new_cases_per_m, 7, fill = NA, align="right")) %>% 
+  #View()
+  ggplot(aes(date, new_cases_per_m)) +
+  geom_col( fill = "blue", alpha = .3) +
+  geom_line(aes(date, ma7) ,size = 1, color = "red")
+
+?rollmean
+#----- New Cases by state -----
+nyt_counties %>%
+  filter(date > "2020-04-01") %>% 
+  filter(state %in% c("California", "Arizona", "Texas", "Florida", "Georgia", "Oklahoma", "South Carolina")) %>% 
+  group_by(state, date) %>% 
+  select(date, state, cases, deaths) %>% 
+  mutate(cases = sum(cases), deaths = sum(deaths)) %>% 
+  distinct() %>% 
+  group_by(state) %>% 
+  inner_join(state_pop, by = "state") %>% 
+  mutate(cases_per_m = cases / (population / 1000000), 
+         new_cases = cases - dplyr::lag(cases), 
+         new_cases_per_m = new_cases / (population / 1000000),
+         new_deaths = deaths - lag(deaths),
+         new_deaths_per_m = new_deaths / (population / 1000000)) %>% 
+  ggplot(aes(date, new_deaths, color = state)) +
   geom_smooth(size = .7) +
-  labs(title = "COVID19: New Cases",
+  labs(title = "COVID19: New Deaths",
        subtitle = "Top States",
        y = "New Cases",
        caption = "graph: @bdill   data: https://github.com/nytimes/covid-19-data/blob/master/us-counties.csv")
@@ -111,8 +140,9 @@ ggsave(filename = "output/nytimes_new_cases_states.png", width = 16, height = 10
 
 #----- New Cases per m by state -----
 nyt_counties %>%
-  filter(date > "2020-04-01") %>% 
-  filter(state %in% c("New York", "New Jersey", "Illinois", "Michigan", "Virginia", "Colorado")) %>% 
+  filter(date > "2020-05-15") %>% 
+  filter(state %in% c("California", "Arizona", "Texas", "Florida", "Georgia", "Idaho", "South Carolina", "Louisiana")) %>% 
+  #filter(state %in% c("New York", "New Jersey", "Illinois", "Michigan", "Virginia", "Colorado")) %>% 
   group_by(state, date) %>% 
   select(date, state, cases) %>% 
   mutate(cases = sum(cases)) %>% 
@@ -122,13 +152,45 @@ nyt_counties %>%
   mutate(cases_per_m = cases / (population / 1000000), 
          new_cases = cases - dplyr::lag(cases), 
          new_cases_per_m = new_cases / (population / 1000000)) %>% 
+  #filter(new_cases_per_m > 300) %>% 
+  #View()
   ggplot(aes(date, new_cases_per_m, color = state)) +
-  geom_smooth(size = .7) +
+  geom_smooth(size = .7, se = FALSE) +
   labs(title = "COVID19: New Cases per M",
-       subtitle = "Blue States",
+       subtitle = "States",
        y = "New Cases Per Mill",
        caption = "graph: @bdill   data: https://github.com/nytimes/covid-19-data/blob/master/us-counties.csv")
-ggsave(filename = "output/nytimes_new_cases_per_m_states_blue.png", width = 16, height = 10, units = "cm")
+ggsave(filename = "output/nytimes_new_cases_per_m_states.png", width = 16, height = 10, units = "cm")
+
+
+
+#----- New Deaths per m by state -----
+nyt_counties %>%
+  filter(date > "2020-04-01", date < "2020-05-25") %>% 
+  filter(state %in% c("California", "Arizona", "Texas", "Florida", "Georgia", "Oklahoma", "South Carolina")) %>% 
+  #filter(state %in% c("New York", "New Jersey", "Illinois", "Michigan", "Virginia", "Colorado")) %>% 
+  group_by(state, date) %>% 
+  select(date, state, cases, deaths) %>% 
+  mutate(cases = sum(cases), deaths = sum(deaths)) %>% 
+  distinct() %>% 
+  group_by(state) %>% 
+  inner_join(state_pop, by = "state") %>% 
+  mutate(cases_per_m = cases / (population / 1000000), 
+         new_cases = cases - dplyr::lag(cases), 
+         new_cases_per_m = new_cases / (population / 1000000),
+         new_deaths = deaths - lag(deaths),
+         new_deaths_per_m = new_deaths / (population / 1000000)) %>% 
+#  arrange(state, date) %>% View()
+  ggplot(aes(date, new_deaths_per_m, color = state)) +
+  geom_smooth(size = .7, se = FALSE) +
+  labs(title = "COVID19: New Deaths per Mill",
+       subtitle = "States",
+       y = "New Deaths Per Mill",
+       caption = "graph: @bdill   data: https://github.com/nytimes/covid-19-data/blob/master/us-counties.csv")
+ggsave(filename = "output/nytimes_new_deaths_per_m_states.png", width = 16, height = 10, units = "cm")
+
+
+
 
 #----- Manual EDA -----
 
