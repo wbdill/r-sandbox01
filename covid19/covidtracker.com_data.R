@@ -143,7 +143,6 @@ states_daily %>%
 ggsave(filename = "output/covidtracker.com_top5_states_cases.png")
 
 
-
 #----- top states CasesPerM -----
 top5_state_cases_per_pop <- states_curr_withpop %>%
   mutate(CasesPerM = positive / (population / 1000000)) %>%

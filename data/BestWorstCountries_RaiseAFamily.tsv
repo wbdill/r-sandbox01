@@ -1,0 +1,36 @@
+Country	Rank	SafetyIndex	SafetyLetter	HappinessIndex	HappinessLetter	CostIndex	CostLetter	HealthIndex	HealthLetter	EducationIndex	EducationLetter	TimeIndex	TimeLetter	RaisingFamilyIndex		Source	https://www.asherfergusson.com/raising-a-family-index/
+Iceland	1	150	A+	193	A	105	A+	0	A+	439	B-	205	A-	1093.07		Date	7/21/2020
+Norway	2	99	B+	189	A-	109	A+	-1	A+	451	B+	244	A+	1090.5			
+Sweden	3	103	A-	191	A	118	A+	-17	A+	456	B+	200	A-	1051.69			
+Finland	4	115	A	179	A-	57	B	12	A+	468	A-	213	A-	1043.08			
+Luxembourg	5	131	A+	196	A	117	A+	-69	B	386	D-	264	A+	1022.66			
+Denmark	6	120	A	196	A	100	A’	-102	C-	466	A-	170	B	949.91			
+Germany	7	97	B+	191	A	58	B	-98	C	457	B+	210	A-	914.62			
+Austria	8	109	A-	174	B+	47	B-	-92	C	419	C	238	A	896.63			
+Belgium	9	97	B+	163	B+	47	B-	-87	C+	468	A-	154	B-	842.33			
+Czech Republic	10	112	A	79	D	55	B	-67	B	446	B-	170	B	794.57			
+Netherlands	11	1164	A	186	A-	-9	D+	-93	C	474	A	99	C-	772.18			
+Portugal	12	79	B-	161	B+	-32	D-	-75	B-	436	B-	193	B+	760.81			
+France	13	64	C+	164	B+	61	B+	-80	B-	435	B-	100	C	743.81			
+Australia	14	89	B	174	B+	-77	F	-45	A-	472	A	114	C	727.45			
+Slovenia	15	119	A	95	D+	4	C-	-87	C+	484	A+	103	C	717.02			
+Ireland	16	108	A-	184	A-	30	C+	-80	B-	458	B+	17	F	716.49			
+Spain	17	78	B-	172	B+	-3	D+	-76	B-	451	B+	86	C-	707.91			
+New Zealand	18	121	A	172	B+	-72	F-	-79	B-	444	B	98	C-	683.59			
+Canada	19	93	B+	180	A-	-54	F-	-53	B+	432	B-	39	D-	637.54			
+Poland	20	80	B	98	D-	-27	D	-121	D	458	B+	179	B	626.96			
+Hungary	21	39	D+	39	F	50	B-	-144	F	422	C+	206	A-	611.57			
+Switzerland	22	107	A-	88	D+	-46	F-	-88	C+	438	B-	97	C-	596.07			
+United Kingdom	23	88	B	190	A	-60	F	-92	C	429	C+	26	D-	581.83			
+Italy	24	71	B-	84	D	34	C+	-98	C	422	C+	61	D+	574.02			
+Japan	25	103	A-	29	F	-53	F	-121	D	470	A	138	F	567.78			
+Israel	26	-1	F	169	B+	13	C	-108	C-	369	F	75	D	516.51			
+Slovak Republic	27	79	B-	73	D	-1	D+	-136	D-	408	C-	75	D-	497.52			
+South Korea	28	65	C+	-2	F	-60	F-	-109	C-	471	A	118	C	483.47			
+Greece	29	30	D	61	D-	-6	D+	-123	D	436	B-	85	C-	481.71			
+Romania	30	62	C+	65	D-	-71	F	-240	F	397	D+	163	B	376.28			
+Bulgaria	31	53	C	23	F	-118	F	-219	F	397	D+	166	B	301.62			
+Turkey	32	-36	F	48	F	-6	D+	-236	F	425	C+	62	D+	255.88			
+Chile	33	49	C-	28	F	-60	F	-235	F	408	C-	34	D-	222.99			
+United States	34	-81	F	132	C+	-124	F	-130	D-	430	C+	-93	F	132.4			
+Mexico	35	-136	F	40	F	-120	F	-416	F	346	F	-44	F	-279.56			

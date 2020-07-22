@@ -4,7 +4,7 @@
 # https://en.wikipedia.org/wiki/FIPS_county_code
 # County populations: https://factfinder.census.gov/faces/tableservices/jsf/pages/productview.xhtml?src=bkmk
 rm(list = ls())
-install.packages("zoo")
+#install.packages("zoo")
 library(tidyverse)
 library(zoo)
 
@@ -22,7 +22,7 @@ counties_pop$county <- str_replace(counties_pop$county, " County", "")
 
 #----- Function to generate graph for each state -----
 
-MapState <- function(x) {
+MapStateCounties <- function(x) {
   state_name <- x$state
   state_abbrev <- x$state_abbrev
   
@@ -46,75 +46,101 @@ MapState <- function(x) {
   ggsave(filename = filename, width = 16, height = 10, units = "cm")
 }
 
-by(state_pop, 1:nrow(state_pop), MapState)
+by(state_pop, 1:nrow(state_pop), MapStateCounties)
 
 
 #----- New cases and New Cases per M
-MapStateNewCases <- function(x) {
+MapStateVarious <- function(x) {
   state_name <- x$state
   state_abbrev <- x$state_abbrev
   
-  gtitle = paste("COVID19: New Cases - ", state_name)
+  
   dat <- nyt_counties %>%
     filter(state == state_name ) %>%  #& county %in% pull(top7_counties, county)
+    #filter(state == "state_name"Tennessee" ) %>%
     group_by(state, date) %>% 
-    select(date, state, cases) %>% 
-    mutate(cases = sum(cases)) %>% 
+    select(date, state, cases, deaths) %>% 
+    mutate(cases = sum(cases),
+           deaths = sum(deaths)) %>% 
     distinct() %>% 
     group_by(state) %>% 
     inner_join(state_pop, by = "state") %>% 
     mutate(cases_per_m = cases / (population / 1000000), 
            new_cases = cases - dplyr::lag(cases), 
            new_cases_per_m = new_cases / (population / 1000000),
-           movavg7 = rollmean(new_cases, 7, fill = NA, align="right"),
-           movavg7_per_m = rollmean(new_cases_per_m, 7, fill = NA, align="right"))
+           new_cases_per_m_avg7 = rollmean(new_cases_per_m, 7, fill = NA, align="right"),         
+           new_deaths = deaths - dplyr::lag(deaths), 
+           new_deaths_per_m = new_deaths / (population / 1000000),
+           new_deaths_per_m_avg7 = rollmean(new_deaths_per_m, 7, fill = NA, align="right") )
     
-    ggplot(dat, aes(date, new_cases)) +
-    geom_col(aes(date, new_cases), fill = "blue", alpha = 0.3) +
-    geom_line(aes(date, movavg7), color = "red") +
-    labs(title = gtitle,
-         subtitle = "7 Day Moving Average in red",
-         y = "New Cases",
-         caption = "graph: @bdill   data: https://github.com/nytimes/covid-19-data/blob/master/us-counties.csv")
-  
-  filename <- paste("output/by_state/new_cases/nyt_new_cases_", state_abbrev, ".png")
+  # new cases
+  gtitle = paste("COVID19: New Cases - ", state_name)
+  ggplot(dat, aes(date, new_cases)) +
+  geom_col(aes(date, new_cases), fill = "blue", alpha = 0.3) +
+  geom_line(aes(date, new_cases_per_m_avg7), color = "red") +
+  labs(title = gtitle,
+       subtitle = "7 Day Moving Average in red",
+       y = "New Cases",
+       caption = "graph: @bdill   data: https://github.com/nytimes/covid-19-data/blob/master/us-counties.csv")
+
+  filename <- paste0("output/by_state/new_cases/nyt_new_cases_", state_abbrev, ".png")
   ggsave(filename = filename, width = 16, height = 10, units = "cm")
 
+  # new cases per M
+  gtitle = paste("COVID19: New Cases per M - ", state_name)
   ggplot(dat ) +
     geom_col(aes(date, new_cases_per_m), fill = "blue", alpha = 0.3) +
-    geom_line(aes(date, movavg7_per_m), color = "red") +
+    geom_line(aes(date, new_cases_per_m_avg7), color = "red") +
     labs(title = gtitle,
          subtitle = "7 Day Moving Average in red",
          y = "New Cases Per M",
          caption = "graph: @bdill   data: https://github.com/nytimes/covid-19-data/blob/master/us-counties.csv")
   
-  filename <- paste("output/by_state/new_cases_per_pop/nyt_new_cases_per_m_", state_abbrev, ".png")
+  filename <- paste0("output/by_state/new_cases_per_pop/nyt_new_cases_per_m_", state_abbrev, ".png")
   ggsave(filename = filename, width = 16, height = 10, units = "cm")  
+
+  # new deaths per M
+  gtitle = paste("COVID19: New Deaths per M - ", state_name)
+  ggplot(dat ) +
+    geom_col(aes(date, new_deaths_per_m), fill = "blue", alpha = 0.3) +
+    geom_line(aes(date, new_deaths_per_m_avg7), color = "red") +
+    labs(title = gtitle,
+         subtitle = "7 Day Moving Average in red",
+         y = "New Deaths Per M",
+         caption = "graph: @bdill   data: https://github.com/nytimes/covid-19-data/blob/master/us-counties.csv")
+  
+  filename <- paste0("output/by_state/new_deaths_per_pop/nyt_new_deaths_per_m_", state_abbrev, ".png")
+  ggsave(filename = filename, width = 16, height = 10, units = "cm")    
+  
 }
 
-by(state_pop, 1:nrow(state_pop), MapStateNewCases)
+by(state_pop, 1:nrow(state_pop), MapStateVarious)
 
 
-#---
+#--- Misc EDA
 state_name <- "Tennessee"
 nyt_counties %>%
   filter(state == state_name ) %>%  #& county %in% pull(top7_counties, county)
   group_by(state, date) %>% 
-  select(date, state, cases) %>% 
-  mutate(cases = sum(cases)) %>% 
+  select(date, state, cases, deaths) %>% 
+  mutate(cases = sum(cases),
+         deaths = sum(deaths)) %>% 
   distinct() %>% 
   group_by(state) %>% 
   inner_join(state_pop, by = "state") %>% 
   mutate(cases_per_m = cases / (population / 1000000), 
          new_cases = cases - dplyr::lag(cases), 
          new_cases_per_m = new_cases / (population / 1000000),
-         ma7 = rollmean(new_cases_per_m, 7, fill = NA, align="right")) %>% 
+         new_cases_per_m_avg7 = rollmean(new_cases_per_m, 7, fill = NA, align="right"),         
+         new_deaths = deaths - dplyr::lag(deaths), 
+         new_deaths_per_m = new_deaths / (population / 1000000),
+         new_deaths_per_m_avg7 = rollmean(new_deaths_per_m, 7, fill = NA, align="right") ) %>% 
   #View()
-  ggplot(aes(date, new_cases_per_m)) +
+  ggplot(aes(date, new_deaths_per_m)) +
   geom_col( fill = "blue", alpha = .3) +
-  geom_line(aes(date, ma7) ,size = 1, color = "red")
+  geom_line(aes(date, new_deaths_per_m_avg7) ,size = 1, color = "red")
 
-?rollmean
+
 #----- New Cases by state -----
 nyt_counties %>%
   filter(date > "2020-04-01") %>% 

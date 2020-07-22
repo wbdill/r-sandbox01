@@ -10,6 +10,7 @@ rm(list = ls())
 #library(data.table)
 library(tidyverse)
 library(lubridate)
+library(zoo)
 
 #----- Read in data -----
 jhconfirmed <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv")
