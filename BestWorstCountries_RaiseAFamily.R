@@ -1,9 +1,11 @@
+# Best/Worst countries to raise a family
+# https://www.asherfergusson.com/raising-a-family-index/
 
 library(tidyverse)
-rm(list = ls())
-getwd()
-setwd("C:/GitHub/r-sandbox01")
-ds <- read_tsv("data/BestWorstCountries_RaiseAFamily.tsv")
+#rm(list = ls())
+
+#ds <- read_tsv("data/BestWorstCountries_RaiseAFamily.tsv")
+ds <- read_tsv("https://raw.githubusercontent.com/wbdill/r-sandbox01/master/data/BestWorstCountries_RaiseAFamily.tsv")
 
 # chop off the non-data columns at the end
 ds <- ds[,0:15]
@@ -21,6 +23,5 @@ ds %>%
                 x = "Country",
           y = "Index Value")
 
+setwd("C:/GitHub/r-sandbox01")
 ggsave(filename = paste0(getwd(), "/output/BestWorstCountries_RaiseAFamily.png"), width = 10, height = 6, dpi = 120)
-
-
