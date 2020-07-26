@@ -65,7 +65,7 @@ ggsave(filename = "output/covidtracker.com_southeast_states_cases_per_pop.png")
 states_daily %>%
   filter(state %in% c("TN", "KY", "LA", "AL", "GA", "MS", "FL", "TX", "AR")) %>%
   ggplot(aes(date, positiveIncrease, color = state)) +
-  geom_smooth(se = TRUE, size = .5) + 
+  geom_smooth(se = FALSE, size = 1) + 
   #geom_line(size = 1) + 
   labs(title = "covid19 Confirmed New Cases",
        subtitle = "Southeastern States",

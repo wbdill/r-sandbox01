@@ -67,8 +67,9 @@ MapStateVarious <- function(x) {
     inner_join(state_pop, by = "state") %>% 
     mutate(cases_per_m = cases / (population / 1000000), 
            new_cases = cases - dplyr::lag(cases), 
+           new_cases_avg7 = rollmean(new_cases, 7, fill = NA, align="right"),
            new_cases_per_m = new_cases / (population / 1000000),
-           new_cases_per_m_avg7 = rollmean(new_cases_per_m, 7, fill = NA, align="right"),         
+           new_cases_per_m_avg7 = rollmean(new_cases_per_m, 7, fill = NA, align="right"),
            new_deaths = deaths - dplyr::lag(deaths), 
            new_deaths_per_m = new_deaths / (population / 1000000),
            new_deaths_per_m_avg7 = rollmean(new_deaths_per_m, 7, fill = NA, align="right") )
@@ -77,7 +78,7 @@ MapStateVarious <- function(x) {
   gtitle = paste("COVID19: New Cases - ", state_name)
   ggplot(dat, aes(date, new_cases)) +
   geom_col(aes(date, new_cases), fill = "blue", alpha = 0.3) +
-  geom_line(aes(date, new_cases_per_m_avg7), color = "red") +
+  geom_line(aes(date, new_cases_avg7), color = "red") +
   labs(title = gtitle,
        subtitle = "7 Day Moving Average in red",
        y = "New Cases",
