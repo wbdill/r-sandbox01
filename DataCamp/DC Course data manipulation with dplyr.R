@@ -1,9 +1,26 @@
 # DC Course data manipulation with dplyr
 # https://campus.datacamp.com/courses/data-manipulation-with-dplyr/transforming-data-with-dplyr?ex=1
 # 2020-07-22
+rm(list = ls())
 library(tidyverse)
 
 counties <- readRDS("data/counties.rds")
+
+library(babynames)
+
+babynames %>% 
+  #filter(name %in% c('Karen', 'Amy') & sex == 'F' | name == 'Chad' & sex == 'M') %>%
+  filter(name %in% c('Oliver') & sex == 'M') %>%
+  #  filter(name %in% c('Chad'), sex == 'M') %>% 
+  filter(year > 1920) %>% 
+  ggplot(aes(year, n, color = name, group = name)) +
+  geom_line(size=1) +
+  labs(title = "Baby Names Born in Year",
+       caption = "source: babynames R package")
+#ggsave("output/karen_babyname.png", units = "in", dpi = 72, height = 3, width = 4)
+ggsave(filename = "output/Kimberly_babyname.png", width = 16, height = 10, units = "cm")  
+
+
 
 #----- Ch 1 -----
 glimpse(counties)
@@ -105,18 +122,54 @@ counties %>%
 babynames <- readRDS("data/babynames.rds")
 library(tidyverse)
 
-
 babynames %>% 
-  filter(name %in% c('Karen', 'Chad', 'Amy')) %>% 
-  filter(year > 1920) %>% 
-  ggplot(aes(year, number, color = name, group = name)) +
-  geom_line(size=1) +
-  labs(title = "Baby Names Born in Year",
-       caption = "source: babynames R package")
-#ggsave("output/karen_babyname.png", units = "in", dpi = 72, height = 3, width = 4)
-ggsave(filename = "output/karen_babyname.png", width = 16, height = 10, units = "cm")  
+  group_by(year) %>% 
+  top_n(1, number)
 
-babynames %>% 
-  filter(year == 1970, number > 20000)
+# Calculate the fraction of people born each year with the same name
+babynames %>%
+  group_by(year) %>%
+  mutate(year_total = sum(number)) %>%
+  ungroup() %>%
+  mutate(fraction = number / year_total) %>% 
+  group_by(name) %>%
+  top_n(1, fraction)
+
+# Add columns name_total and name_max for each name
+babynames %>%
+  group_by(name) %>%
+  mutate(name_total = sum(number),
+         name_max = max(number))
+
+babynames %>%
+  group_by(name) %>%
+  mutate(name_total = sum(number),
+         name_max = max(number)) %>%
+  ungroup() %>%
+  # Add the fraction_max column containing the number by the name maximum 
+  mutate(fraction_max = number / name_max) %>% 
+  filter(name %in% c("Brian", "John", "Christian", "Matthew")) %>% 
+  filter(year > 1940) %>% 
+  ggplot(aes(year, fraction_max, color = name)) +
+  geom_line()
+
+babynames %>%
+  filter(name %in% c("Brian", "John", "Christian", "Matthew")) %>% 
+  filter(year > 1940) %>% 
+  ggplot(aes(year, number, color = name)) +
+  geom_line()
 
 
+babynames_fraction <- babynames %>%
+  group_by(year) %>%
+  mutate(year_total = sum(number)) %>%
+  ungroup() %>%
+  mutate(fraction = number / year_total)
+
+babynames_fraction %>%
+  # Arrange the data in order of name, then year 
+  arrange(name, year) %>%
+  # Group the data by name
+  group_by(name) %>%
+  # Add a ratio column that contains the ratio between each year 
+  mutate(ratio = fraction / lag(fraction))
