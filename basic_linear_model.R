@@ -11,16 +11,22 @@ library(broom)
 rm(list = ls())
 
 income.data <- read_csv("c:/github/r-sandbox01/data/income.data.csv")
+str(income.data)
+glimpse(income.data)
 
 summary(income.data)
 
 # do we have a normal distribution?
 hist(income.data$happiness)
+hist(income.data$happiness, breaks = 30)
+?hist
 
 # basic scatterplot
+?plot
 plot(happiness ~ income, data = income.data)
 
 # create the linear model
+?lm
 income.happiness.lm <- lm(happiness ~ income, data = income.data)
 
 
@@ -44,6 +50,7 @@ plot(income.happiness.lm)
 # This means there are no outliers or biases in the data that would make a linear regression invalid.
 
 # make pretty graph
+
 income.graph <- ggplot(income.data, aes(x=income, y=happiness)) +
   geom_point() +
   geom_smooth(method="lm", col="red") +  # to hide the error spread: , se = FALSE
@@ -55,4 +62,4 @@ income.graph <- ggplot(income.data, aes(x=income, y=happiness)) +
 income.graph
 
 # do a prediction based on income value
-predict(income.happiness.lm , data.frame(income = 5))
+predict(income.happiness.lm , data.frame(income = 20))
