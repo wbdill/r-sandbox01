@@ -35,6 +35,8 @@ filter(bls, series_id == "CES9092161101" | series_id == "CEU9092161101") %>%
 # SM = State and Area Employment, Hours, and Earnings (NAICS)
 # https://download.bls.gov/pub/time.series/sm/
 
+smdatatype <- read.csv("https://download.bls.gov/pub/time.series/sm/sm.data_type")
+smdatatype <- read_csv("https://download.bls.gov/pub/time.series/sm/sm.data_type")
 smdatatype <- fread("https://download.bls.gov/pub/time.series/sm/sm.data_type")
 smseries <- fread("https://download.bls.gov/pub/time.series/sm/sm.series")
 smstate <- fread("https://download.bls.gov/pub/time.series/sm/sm.state")
@@ -68,6 +70,7 @@ sm_all_states <- rbindlist(mget(lst))   # union all those tables
 filter(smindustry, str_detect(industry_name, "Education"), !str_detect(industry_name, "excluding"))
 # 65000000                       Education and Health Services
 # 65610000                                Educational Services
+# 65611100                    Elementary and Secondary Schools
 # 90921611               State Government Educational Services
 # 90931611               Local Government Educational Services
 # 90936111 Local Government Elementary and Secondary Education
@@ -76,7 +79,7 @@ filter(smindustry, str_detect(industry_name, "Education"), !str_detect(industry_
 desired_series <- smseries %>% 
   left_join(smstate, by = "state_code") %>% 
   filter(data_type_code == 1) %>% 
-  filter(industry_code %in% c("90921611", "90931611", "65610000", "90936111")) %>%
+  filter(industry_code %in% c("90921611", "90931611", "65610000", "90936111", "65611100")) %>%
   filter(state_name %in% c("Colorado", "Ohio", "South Carolina", "South Dakota", "Tennessee", "Texas")) %>%
   filter(area_code == 0) %>% 
   filter(seasonal == "U") %>% 
@@ -100,10 +103,10 @@ plotdata <- sm_all_states %>%
 
 ggplot(plotdata, aes(x = month, y = value)) +
   geom_line(aes(group = industry_name, color = industry_name), size = .7) +
+  facet_wrap(~ state_name) +
   scale_x_date(date_breaks = "6 months", date_labels = "%Y-%m") +
   scale_y_continuous(limits = c(0, max(plotdata$value) + 5)) +
   theme(axis.text.x = element_text(angle = 90, vjust = .5)) +  
-  facet_wrap(~ state_name) +
   labs(title = "Education Employees",
        subtitle = "State/Local Educational Services (non-seasonal adjusted)",
        y = "Employees (x1000)",
@@ -128,3 +131,5 @@ ggplot(plotdata, aes(x = month, y = value_pop)) +
        caption = "Graph: @bdill - Data: BLS https://download.bls.gov/pub/time.series/sm/")
 
 ggsave("BLS_education_employees_pct_pop.png", width = 12, height = 7, dpi = 150)
+
+select(desired_series, series_id)

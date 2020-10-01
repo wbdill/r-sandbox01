@@ -55,7 +55,6 @@ jh_cdr_by_country <- jh_cdr %>%
 #write_csv(jhcountries, path = "output/covid19_jh_country_lat_long.csv")
 #write_csv(jh_gis, path = "output/covid19_jh_timeseris_with_latlong.csv")
 
-
 #----- graphs -----
 
 #----- China by province -----
@@ -113,16 +112,28 @@ ggsave(filename = paste0(getwd(), "/output/covid19_country_deaths.png"), width =
 
 #----- Country populations -----
 
-country_pop <-read_csv("https://datahub.io/JohnSnowLabs/population-figures-by-country/r/population-figures-by-country-csv.csv")
+# mismatched country names
+jh_cdr_by_country %>% 
+  mutate(jhCountry = Country) %>% 
+  distinct(Country, jhCountry) %>% 
+  full_join(country_pop, by = "Country") %>% 
+  filter(is.na(UN_continental_region) | is.na(jhCountry)) %>% 
+  View()
+
+country_pop <- read_tsv("https://pastebin.com/raw/E9JmMRLe")
+#country_pop <-read_csv("https://datahub.io/JohnSnowLabs/population-figures-by-country/r/population-figures-by-country-csv.csv")
 country_pop2 <- country_pop %>%
-  select(Country, pop = Year_2016) %>%
+  select(Country, pop = Population_2019) %>%
   mutate(Country = case_when(Country == "United States" ~ "US", 
                              Country == "Iran, Islamic Rep." ~ "Iran",
+                             Country == "Iran, Islamic Rep." ~ "Iran",
+                             Country == "South Korea" ~ "Korea, South",
                              TRUE ~ Country))
+
 
 jh_cdr_by_country_per_pop <- jh_cdr_by_country %>%
   inner_join(country_pop2) %>%
-  #filter(Country %in% c("Italy", "US", "Spain", "Germany", "France",  "Turkey")) %>%
+  #filter(Country %in% c("Italy", "US", "Spain", "Germany", "France",  "Turkey", "Korea, South")) %>%
   group_by(Country) %>%
   arrange(Country, Date) %>%
   filter(Date >= "2020-03-01") %>%
@@ -130,7 +141,11 @@ jh_cdr_by_country_per_pop <- jh_cdr_by_country %>%
          DeathsPerM = round(Deaths / (pop / 1000000), 2),
          prev = lag(Confirmed, n = 1),
          delta = Confirmed - prev,
-         deltaPerM = delta / (pop / 1000000)) 
+         deltaPerM = delta / (pop / 1000000),
+         CasesPerM_7avg = rollmean(CasesPerM, 7, fill = NA, align="right"),
+         delta_7avg = rollmean(delta, 7, fill = NA, align="right"),
+         deltaPerM_7avg = rollmean(deltaPerM, 7, fill = NA, align="right")
+         )
 
 #write_csv(jh_cdr_by_country_per_pop, "output/jh_covid19_countries_CDM_per_pop_raw.csv")
 #View(jh_cdr_by_country_per_pop)
@@ -190,17 +205,33 @@ ggsave(filename = "output/covid19_country_per_m_new_cases_per_m.png", width = 10
 
 #----- top countries New cases -----
 jh_cdr_by_country_per_pop %>%
-  filter(Country %in% c("Brazil", "Chile", "Germany", "Peru", "United Kingdom", "US")) %>%
-  ggplot(aes(x = Date, y = delta, color = Country)) +
-  geom_smooth(size = 1) +
-  #geom_line() +
+  filter(Country %in% c("Denmark", "India", "US", "Sweden")) %>%  #, "Korea, South"
+  ggplot() +
+  geom_col(aes(x = Date, y = delta), fill = "blue", alpha = 0.3) +
+  geom_line(aes(Date, delta_7avg), color = "red") +
+  facet_wrap( ~ Country) +
   labs(title = "covid-19 NEW CASES  by Country",
        subtitle = "Data Repository by Johns Hopkins CSSE",
        y = "New Cases",
-       caption = "Graph: @bdill  data: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series"
+       caption = "Graph: @bdill  data: Johns Hopkins https://bit.ly/3bWhjwC"
   )
 
-ggsave(filename = "output/covid19_country_new_cases.png", width = 10, height = 6, dpi = 120)
+ggsave(filename = "output/covid19_country_new_cases.png", width = 10, height = 6, dpi = 200)
+
+jh_cdr_by_country_per_pop %>%
+  filter(Country %in% c("Denmark", "India", "US", "Sweden")) %>%  #, "Korea, South"
+  ggplot() +
+  geom_col(aes(x = Date, y = deltaPerM), fill = "blue", alpha = 0.3) +
+  geom_line(aes(Date, deltaPerM_7avg), color = "red") +
+  facet_wrap( ~ Country) +
+  labs(title = "covid-19 NEW CASES  by Country",
+       subtitle = "Data Repository by Johns Hopkins CSSE",
+       y = "New Cases per Population",
+       caption = "Graph: @bdill  data: Johns Hopkins https://bit.ly/3bWhjwC"
+  )
+
+ggsave(filename = "output/covid19_country_new_cases_per_pop.png", width = 10, height = 6, dpi = 200)
+
 
 #----- daily update v population -----
 
@@ -272,4 +303,7 @@ jh_country %>%
        caption = "Graph: @bdill  data: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series")
 
 ggsave(filename = "output/covid19_deaths_per_pop_by_country_sweden.png", width = 8, height = 5, dpi = 120)
+
+
+
 
