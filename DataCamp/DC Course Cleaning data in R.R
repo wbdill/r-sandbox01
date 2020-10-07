@@ -1,7 +1,17 @@
 # Cleaning Data in R
 # https://campus.datacamp.com/courses/cleaning-data-in-r/
 # 2020-09-29
-library(dplyr)
+install.packages("visdat")
+library(visdat)
+install.packages("stringdist")  # determine edit distance
+library(stringdist)
+install.packages("fuzzyjoin")   # do fuzzy join based on edit distance
+library(fuzzyjoin)
+install.packages("reclin")  # record linkage -generates matching pairs between 2 data sets
+library(reclin)
+
+library(tidyverse)
+#library(dplyr)
 library(stringr)
 library(assertive)
 
@@ -88,12 +98,171 @@ bike_share_rides %>%
 
 #----- Ch 2 - Categorical and Text Data -----
 sfo_survey <- read_rds("data/sfo_survey_ch2_1.rds")
-sfo_survey %>% 
-  count(dest_size)
 
+# 2.1) trim whitespace and capilization cleaning
+count(sfo_survey, dest_size)
+count(sfo_survey, cleanliness)
+sfo_survey <- sfo_survey %>%
+  mutate(dest_size_trimmed = str_trim(dest_size),  # dest_size_trimmed: dest_size without whitespace
+         cleanliness_lower = str_to_lower(cleanliness))  # cleanliness_lower: cleanliness converted to lowercase
+count(sfo_survey, dest_size_trimmed)
+count(sfo_survey, cleanliness_lower)
+
+# 2.2) categorical cleaning (factor collapsing)
+library(forcats)
+?fct_collapse
+count(sfo_survey, dest_region)
+europe_categories <- c("EU", "Europ", "eur")  # Categories to map to Europe
+sfo_survey %>% # Add a new col dest_region_collapsed
+  mutate(dest_region_collapsed = fct_collapse(dest_region,  
+                                        Europe = europe_categories)) %>%  # Map all categories in europe_categories to Europe
+  count(dest_region_collapsed)   # Count categories of dest_region_collapsed
+
+# 2.3) text data cleaning ---
+# 2.3.1)  formatting inconsistency    ### NOTE: phone isn't in the dataset ****
+sfo_survey %>%
+  filter(str_detect(phone, "-")) # Filter for rows with "-" in the phone column
+
+
+# 2.3.2) info inconsistency (ex: sub parts missing like area code in phone number)
+sfo_survey %>%
+  filter(str_detect(phone, fixed("(")) | str_detect(phone, fixed(")")))  # Filter for rows with "(" or ")" in the phone column
+
+phone_no_parens <- sfo_survey$phone %>%   # Remove parentheses from phone column
+  str_remove(fixed("(")) %>%  # Remove "("s
+  str_remove(fixed(")"))  # Remove ")"s
+
+# Add phone_no_parens as column
+sfo_survey %>%
+  mutate(phone_no_parens = phone_no_parens,
+         phone_clean = str_replace_all(phone_no_parens, "-", " ")) # Replace all hyphens in phone_no_parens with spaces
+
+
+# 2.3.3) invalid data (ex longer or shorter than allowed)
+sfo_survey %>%
+  str_length(phone != 12)
 
 #----- Ch 3 - Advanced Data Problems -----
 
+library(lubridate)
+# accounts <- read_rds("data/ch3_1_accounts.rds")
+accounts <- read_tsv("data/accounts.tsv")
+account_offices <- read_tsv("data/account_offices.tsv")
+accounts$date_opened <- as.Date(accounts$date_opened)
+
+# 3.1) Uniformity
+
+# 3.1.1 different units
+head(accounts)
+
+formats <- c("%Y-%m-%d", "%B %d, %Y")  # Define the date formats
+accounts %>%
+  mutate(date_opened_clean = lubridate::parse_date_time(date_opened, formats))  # Convert dates to the same format
+
+accounts %>%
+  ggplot(aes(x = date_opened, y = total)) +  # Scatter plot of opening date and total amount
+  geom_point()
+
+accounts %>% 
+  left_join(account_offices, by = "id") %>% 
+  mutate(total_usd = ifelse(office == "Tokyo", total / 104, total)) %>% 
+  ggplot(aes(x = date_opened, y = total_usd)) +  # Scatter plot of opening date and total amount
+  geom_point()
+
+# 3.2) Cross field validation
+library(lubridate)
+date_difference <- as.Date("2015-09-04") %--% today()
+date_difference
+as.numeric(date_difference, "years")
+
+accounts %>% 
+  mutate(theoretical_total = fund_A + fund_B + fund_C) %>% 
+  filter(theoretical_total != total)
+
+# this exampe will soon be moot as this dataset ages b/c acct_age will eventually be of for all records.
+accounts %>% 
+  mutate(theoretical_age = floor(as.numeric(as.Date(date_opened) %--% today(), "years" ) ) ) %>% 
+  filter(acct_age != theoretical_age)
+
+# alternate date/time diff:
+time_length(difftime(coalesce(end_date, today()), start_date), "years")
+
+# 3.3) Missing data  Missing completely at random (MCAR), Missing at random (MAR), Missing not at random (MNAR)
+# simple approach: 1 drop data or 2 impute wil statistical measures (mean, median) or domain knowledge
+# complex approach: 1 impute using algorithms or 2 imput with machine learning models
+library(visdat)
+vis_miss(sfo_survey)
+
+# filter(!is.na(col1), !is.na(col2))  # remove rows with missing values
+# mutate(col1_filled = ifelse(is.na(col1), mean(col1, na.rm = TRUE), col1))  # replace missing with mean
+accounts <- read_tsv("data/accounts_ch3.tsv")
+accounts %>% 
+  vis_miss()
+
+accounts %>%
+  mutate(missing_inv = is.na(inv_amount)) %>%  # missing_inv: Is inv_amount missing?
+  group_by(missing_inv) %>%  # Group by missing_inv
+  summarise(avg_age = mean(age))  # Calculate mean age for each missing_inv group
+
+accounts %>%
+  arrange(age) %>%  # Sort by age and visualize missing vals
+  vis_miss()
 
 
 #----- Ch 4 - Record Linkage -----
+# when traditional joins can't be used because of no exact match
+library(stringdist)
+library(fuzzyjoin)
+
+fodors <- read_rds("data/fodors.rds")
+zagat <- read_rds("data/zagat.rds")   # this dataset already has clean city names
+head(fodors)
+head(zagat)
+cities <- tribble(
+  ~city_actual,
+  "new york",
+  "los angeles",
+  "atlanta",
+  "san fransisco",
+  "las vegas"
+)
+
+### edit distance (add char, delete char, transpose 2 chars, substitute char)
+### types of edit distance: Damerau-Levenshtein, Levenshtein (no transpose), LCS (only ins and del)
+
+stringdist("las angelos", "los angeles", method = "dl")  # dl = Damerau-Levenshtein
+stringdist("las angelos", "los angeles", method = "lcs")
+stringdist("las angelos", "los angeles", method = "jaccard")
+
+zagat %>%
+  count(city)
+
+zagat %>%   # Join zagat and cities and look at results
+  stringdist_left_join(cities, by = c("city" = "city_actual")) %>%  # Left join based on stringdist using city and city_actual cols
+  select(name, city, city_actual)  # Select the name, city, and city_actual cols
+
+### record linkage
+library(reclin)
+
+pair_blocking(dfA, dfB, blocking_var = "foo") %>% 
+compare_pairs(by = "col", default_comparator = lcs())
+
+pair_blocking(zagat, fodors)  #165,230 pairs
+pair_blocking(zagat, fodors, blocking_var = "city") #40,532
+
+pair_blocking(zagat, fodors, blocking_var = "city") %>%    # Generate pairs
+  compare_pairs(by = "name", default_comparator = lcs())   # Compare pairs by name using lcs()
+
+pair_blocking(zagat, fodors, blocking_var = "city") %>%    # Generate pairs
+  compare_pairs(by = c("name", "phone", "addr"), default_comparator = jaro_winkler())   # Compare pairs by name, phone, addr via jaro_winkler()
+
+# score_simsum()  # simple summary of all scores into a new col "simsum"
+# score_problink()  # weighted score
+# select_n_to_m()   # mathces pairs with highest scores (record from A matches at most 1 record from B)
+
+# Create pairs
+pair_blocking(zagat, fodors, blocking_var = "city") %>%
+  compare_pairs(by = "name", default_comparator = jaro_winkler()) %>%  # Compare pairs
+  score_problink() %>%   # Score pairs based on probabilistic weights
+  select_n_to_m() %>%    # select pairs
+  link()                 # link data

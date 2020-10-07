@@ -17,17 +17,16 @@ tail(sc)
 str(sc)
 
 sc$succeeded_num <- as.numeric(sc$succeeded_num)
-sc <- sc %>% 
-  mutate(confirmed = parse_date_time(confirmed, c("%B %d, %Y", "%m/%d/%Y", "%Y-%m-%d")),
-         start_date = parse_date_time(start_date, c("%B %d, %Y", "%m/%d/%Y", "%Y-%m-%d")),
-         end_date = parse_date_time(end_date, c("%B %d, %Y", "%m/%d/%Y", "%Y-%m-%d"))
-  )
-sc <- sc %>% 
-  mutate(
-    tenure_years = time_length(difftime(coalesce(end_date, today()), start_date), "years"),
-    confirmed_century =   as.integer(paste0(floor(lubridate::year(confirmed) / 100), "00")),
-    confirmed_decade = as.integer(paste0(floor(lubridate::year(confirmed) / 10), "0"))
-  )
+
+formats <- c("%B %d, %Y", "%m/%d/%Y", "%Y-%m-%d")
+sc <- sc %>%   # have to run this twice for some reason...
+  mutate(confirmed = parse_date_time(confirmed, formats),
+         start_date = parse_date_time(start_date, formats),
+         end_date = parse_date_time(end_date, formats),
+         tenure_years = time_length(difftime(coalesce(end_date, today()), start_date), "years"),
+         confirmed_century =   as.integer(paste0(floor(lubridate::year(confirmed) / 100), "00")),
+         confirmed_decade = as.integer(paste0(floor(lubridate::year(confirmed) / 10), "0"))
+         )
 
 #----- Since 1900 graphs -----
 sc_1900 <- filter(sc, confirmed > "1900-01-01", is_repeat == 0)
@@ -38,15 +37,14 @@ sc_1900 %>%
   count() %>% 
   ggplot(aes(x = confirmed_decade, y = n, group = religion, fill = religion)) +
   geom_col(position = "stack", alpha = 1) +
+  scale_fill_discrete(name = "Religion") +
+  scale_x_continuous(breaks = seq(1900,2020,10), expand = c(0,0) ) +
+  theme_bdill +
   labs(title = "SCOTUS Religion by Decade",
        x = "Decade Confirmed",
-       y = "Count") +
-  scale_fill_discrete(name = "Religion") +
-  scale_x_continuous("Decade Confirmed",
-                      breaks = seq(1900,2020,10),
-                      expand = c(0,0)
-  ) +
-  theme_bdill
+       y = "Count",
+       caption = "@bdill Source: https://bit.ly/2ELPivo")
+
   ggsave("output/SCOTUS_religion_decade.png", width = 7, height = 5, dpi = 200)
 
 
@@ -55,14 +53,15 @@ sc_1900 %>%
   count() %>% 
   ggplot(aes(x = confirmed_decade, y = n, group = sex, fill = sex )) +
   geom_col(position = "stack") +
-  labs(title = "SCOTUS Sex by Decade") +
   scale_fill_discrete(name = "Sex") +
-  scale_y_continuous("Count", breaks = seq(0, 10, 1))
-  scale_x_continuous("Decade Confirmed",
-                     breaks = seq(1900,2020,10),
-                     expand = c(0,0)
-  ) +
-  theme_bdill
+  scale_y_continuous("Count", breaks = seq(0, 10, 1)) +
+  scale_x_continuous(breaks = seq(1900,2020,10), expand = c(0,0) ) +
+  theme_bdill +
+  labs(title = "SCOTUS Sex by Decade",
+       x = "Decade Confirmed",
+       y = "Count",
+       caption = "@bdill Source: https://bit.ly/2ELPivo")
+  
 ggsave("output/SCOTUS_sex_decade.png", width = 7, height = 5, dpi = 200)
 
 
@@ -71,21 +70,20 @@ sc_1900 %>%
   count() %>% 
   ggplot(aes(x = confirmed_decade, y = n, group = race,  fill = race )) +
   geom_col(position = "stack") +
-  labs(title = "SCOTUS Race by Decade",
-       x = "Decade Confirmed",
-       y = "Count") +
   scale_fill_discrete(name = "Race") +
-  scale_x_continuous("Decade Confirmed",
-                     breaks = seq(1900,2020,10),
-                     expand = c(.01,.01)
-  ) +
-  theme_bdill
+  scale_x_continuous(breaks = seq(1900,2020,10), expand = c(.01,.01) ) +
+  theme_bdill +
+  labs(title = "SCOTUS Race by Decade",
+     x = "Decade Confirmed",
+     y = "Count",
+     caption = "@bdill Source: https://bit.ly/2ELPivo")
+
   ggsave("output/SCOTUS_race_decade.png", width = 7, height = 5, dpi = 200)
 
 
 #----- timeline graphs -----
 sc %>% 
-    filter(confirmed > "1950-01-01") %>% 
+    filter(confirmed > "1900-01-01") %>% 
     ggplot(aes(x = start_date, y = reorder(justice, desc(start_date)), color = nominated_by_party), size = 3) +
     geom_point(size = 3) +
     geom_point(aes(x = end_date ), shape = 15, size = 3) +
@@ -97,9 +95,7 @@ sc %>%
          y = "Justice",
          caption = "@bdill Source: https://bit.ly/2ELPivo")
     ggsave("output/SCOTUS_tenure_since_1950.png", width = 9, height = 6, dpi = 200)
-    as.numeric(as.POSIXct(sc$start_date))  
-#    geom_segment(aes(xend = 0, yend = end_date), size = 2)
-  
+
 #----- Misc -----
 
 
@@ -116,7 +112,13 @@ sc_1970 %>%
   group_by(sex, race, religion) %>% 
   count()
 
-time_length(difftime(coalesce(s$end_date, today()), s$start_date), "years")
-
 sc %>% 
+  filter(is_repeat == 0)%>% 
+  filter(confirmed >= "1900-01-01") %>% 
   count(religion)
+
+sc_1900 %>% 
+  group_by(end_reason, nominated_by_party) %>% 
+  count() %>% 
+  pivot_wider(values_from = n, names_from = nominated_by_party)
+
