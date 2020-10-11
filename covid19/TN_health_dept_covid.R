@@ -14,7 +14,7 @@ wmson <- d %>%
 
 my_blue <- "#aaaaff"
 my_labs <- labs(title = "TITLE HERE",
-             subtitle = "Williamson County, TN ",
+             subtitle = "Williamson County, TN (2020)",
              caption = "@bdill Source: https://www.tn.gov/health/cedep/ncov/data/downloadable-datasets.html (County New)")
 
 #----- New Cases -----
@@ -24,7 +24,8 @@ wmson %>%
   ggplot(aes(DATE, NEW_TESTS)) +
   geom_col(fill = my_blue) +
   geom_line(aes(DATE, NEW_TESTS_07da), color = "red", size = 1) +
-  my_labs
+  my_labs +
+  labs(title = "New Tests")
 
 #----- Positivity -----
 wmson %>% 
@@ -42,15 +43,13 @@ wmson %>%
   filter(DATE >= "2020-04-03") %>% 
   pivot_longer(cols = c("TOTAL_HOSPITALIZED", "TOTAL_DEATHS"), names_to = "Stat") %>% 
   select(DATE, Stat, value)  %>% 
-#select(DATE, TOTAL_HOSPITALIZED)
+  #select(DATE, TOTAL_HOSPITALIZED)
   ggplot() +
   geom_line(aes(DATE, value, color = Stat), size = 1) +
-#  geom_line(aes(DATE, TOTAL_DEATHS)) +
   ylim(c(0, max(wmson$TOTAL_HOSPITALIZED))) +
-  #scale_y_continuous(limit = )
+  scale_x_datetime(breaks = "1 month", date_labels = "%b") +
   my_labs +
   labs(title = "Total Deaths, Hospitalized")
 
   ggsave("output/TN_Williamson_tot_death_hosp.png", width = 8, height = 5, dpi = 200)
-  
   
