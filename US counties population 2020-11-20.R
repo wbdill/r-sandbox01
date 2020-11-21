@@ -4,6 +4,9 @@ library(tidyverse)
 rm(list = ls())
 setwd("D:/opendata/county_demographics")
 
+# https://www.census.gov/data/tables/time-series/demo/popest/2010s-counties-detail.html
+# https://www2.census.gov/programs-surveys/popest/datasets/2010-2019/counties/asrh/cc-est2019-alldata.csv
+
 pop <- read_csv("cc-est2019-alldata.csv")  # 170MB
 str(pop)
 head(pop)
@@ -80,15 +83,4 @@ tn_pop_delta %>%
        caption = "@bdill  Data: US Census cc-est2019-alldata.csv")
 ggsave("TN_county_growth_2010s_bottom.png", width = 7, height = 5, dpi = 150)
 
-hist(tn_pop_delta$delta_pct)
 
-?pivot_longer
-vignette("pivot")
-?round
-
-  ggplot(aes(year, pop, group = county)) +
-  geom_line(aes(color = county)) +
-  scale_y_log10()
-
-  ?pivot_wider
-  
