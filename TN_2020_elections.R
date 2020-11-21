@@ -3,61 +3,178 @@ rm(list = ls())
 install.packages("rvest")  # web scraping package
 install.packages("xml2")
 library(xml2)
-library(rvest)
+library(rvest) # web scraping
 library(tidyverse)
 
-test_url <- "https://www.elections.tn.gov/county-results.php?OfficeByCounty=United%20States%20President"
-test_xml <- read_html(test_url)  # Read the URL stored as "test_url" with read_html()
-test_xml  # Print test_xml
 
+#----- TN County votes -----
+test_xml <- read_html("https://www.elections.tn.gov/county-results.php?OfficeByCounty=United%20States%20President")
+test_xml[[1]]
 
-counties_html <- html_nodes(test_xml, css = ".election-result-table .results-header-row h3")
-counties <- as.data.frame(html_text(counties_html))
-names(counties)  <-  "county"
+#counties_html <- html_nodes(test_xml, css = ".election-result-table .results-header-row h3")
+#counties <- as.data.frame(html_text(counties_html))
+#names(counties)  <-  "county"
 
-results_html <- html_nodes(test_xml, css = ".election-result-table tbody")
+results_html <- html_nodes(test_xml, css = ".election-result-table")
+lst <- html_table(results_html)
+county_votes = data.frame(row.names = c("county", "candidate", "votes", "percent"))  # bootstrap the data frame
 
-
-get_county <- function(county_name, node) {
-  df1 <- as.data.frame(html_text(html_nodes(node, css = "th")))
-  stxt <- html_text(html_nodes(node, css = "td"))
-  
-  df2 <- as.data.frame(matrix(stxt, ncol = 3 , byrow = TRUE))
-  df2[,3] <- as.numeric( str_trim(str_replace(str_replace(df2[,3], "\n", ""), "%", "")) )   # strip % and remove whitespace
-  df2[,2] <- as.numeric( str_trim(str_replace_all(df2[,2], ",", "")) )                      # strip comma
-  
-  df3 <- cbind(county_name, df1, df2)
-  names(df3) <- c("county", "candidate", "party", "votes", "percent")
-  df3
-}
-
-#get_county("ff", results_html[96])
-
-df_master <- data.frame(row.names = c("county", "candidate", "votes", "percent"))
 for(i in 1:95) {
-  df_master <- rbind(df_master, get_county(counties[i,1], results_html[i]))
-  #get_county(counties[i,1], results_html[i])
+  x <- cbind(names(lst[[i]])[1], lst[[i]])  # take column header (county name) and prepend a new column filled with that name
+  names(x) <- c("county", "candidate", "party", "votes", "percent")
+  county_votes <- rbind(county_votes, x)  # loop and concatenate each county table to county_votes
 }
+county_votes$votes <- as.numeric( str_remove_all(county_votes$votes, ",") )     # clean and make number
+county_votes$percent <- as.numeric( str_remove_all(county_votes$percent, "%") ) # clean and make number
+str(county_votes)
 
-df_master %>% 
-  group_by(candidate) %>% 
-  summarise(votes = sum(votes)) %>% 
-  arrange(desc(votes))
+tn_county_votes_wide <- county_votes %>% 
+  select(county, party, votes) %>% 
+  group_by(county, party) %>% 
+  summarize(votes = sum(votes)) %>% 
+  pivot_wider(names_from = party, values_from = votes) %>% 
+  mutate(total_votes = Democratic + Independent + Republican,
+         dem_pct = round(Democratic * 100 / total_votes, 3),
+         rep_pct = round(Republican * 100 / total_votes, 3) ,
+         ind_pct = round(Independent * 100 / total_votes, 3) )
 
-df_master %>% 
-  filter(candidate == "Donald J. Trump") %>% 
-  arrange(desc(percent)) %>% 
-  select(county, votes, percent)
+# TODO: get Rep, Dem, Ind votes for all US counties with FIPS code
 
 
-
+#----- County population -----
 county_pop <- read_csv("https://pastebin.com/raw/jQYXHM8e")
 county_pop_tn <- county_pop %>% 
   filter(state == "Tennessee") %>% 
   select(fips_code, county, pop_2018) %>% 
   mutate(county = str_remove(county, " County"))
 
-df_vote_pct <- df_master %>% 
+#----- County demographics -----
+# https://www.census.gov/library/publications/2011/compendia/usa-counties-2011.html
+# https://www2.census.gov/programs-surveys/popest/technical-documentation/file-layouts/2010-2019/cc-est2019-alldata.pdf
+county_demo <- read_csv("https://www2.census.gov/programs-surveys/popest/datasets/2010-2019/counties/asrh/cc-est2019-alldata.csv")
+str(county_demo)
+
+county_votes_wide <- county_votes %>% 
+  select(county, party, votes) %>% 
+  group_by(county, party) %>% 
+  summarize(votes = sum(votes)) %>% 
+  pivot_wider(names_from = party, values_from = votes) %>% 
+  mutate(total_votes = Democratic + Independent + Republican,
+         dem_pct = round(Democratic * 100 / total_votes, 3),
+         rep_pct = round(Republican * 100 / total_votes, 3) ,
+         ind_pct = round(Independent * 100 / total_votes, 3) )
+
+#----- County land -----
+county_land <- read_csv("https://pastebin.com/raw/swNsVEZA")
+county_land_sm <- county_land %>% select(FIPS, land_sq_mi)
+
+
+county_demo %>% filter(YEAR == 12, AGEGRP == 0) %>% 
+  count(STNAME) %>% 
+  select(state = STNAME, num_counties = n)
+
+county_demo %>% filter(YEAR == 12, AGEGRP == 0) %>% 
+  group_by(STNAME) %>% 
+  summarize(tot_pop = sum(TOT_POP), num_counties = n()) %>% 
+  select(state = STNAME, tot_pop, num_counties) %>% 
+  View()
+
+county_demo_land <- county_demo %>% 
+  filter(YEAR == 12, AGEGRP == 0) %>% 
+  mutate(pct_black = (BA_MALE + BA_FEMALE) * 100 / TOT_POP,
+         pct_white = (WA_MALE + WA_FEMALE) * 100 / TOT_POP,
+         pct_indian = (IA_MALE + IA_FEMALE) * 100 / TOT_POP,
+         pct_asian = (AA_MALE + AA_FEMALE) * 100 / TOT_POP,
+         pct_pacific = (NA_MALE + NA_FEMALE) * 100 / TOT_POP,
+         pct_two = (TOM_MALE + TOM_FEMALE) * 100 / TOT_POP,
+         pct_hisp = (H_MALE + H_FEMALE) * 100 / TOT_POP,
+         FIPS = paste0(STATE, COUNTY), 
+         county = str_replace(CTYNAME, " County", "")) %>% 
+  select(FIPS, STFIPS = STATE, state = STNAME, COFIPS = COUNTY, county, tot_pop = TOT_POP, 
+         pct_white, pct_black, pct_indian, pct_asian, pct_pacific, pct_two, pct_hisp) %>% 
+  inner_join(county_land_sm, by = "FIPS") %>% 
+  mutate(person_per_sq_mi = tot_pop / land_sq_mi)
+
+
+#----- % Dem vs density -----
+county_demo_land_votes %>% 
+  ggplot(aes(x = person_per_sq_mi, y = dem_pct)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+county_demo_land %>% arrange(desc(person_per_sq_mi)) %>% View()
+county_demo_land %>% filter(state == "New York") %>% View()
+#----- density vs pct_black -----
+setwd("D:/opendata/county_landmass")
+
+county_demo_land %>% 
+  ggplot(aes(x = person_per_sq_mi, y = pct_white)) +
+  geom_point(alpha = 0.2) +
+  scale_x_log10() +
+  scale_y_log10() +
+  geom_smooth(method = "lm") +
+  labs(title = "US County density vs % White")
+ggsave("county_density_vs_white.png", width = 9, height = 6, dpi = 150)
+
+county_demo_land %>% 
+  ggplot(aes(x = person_per_sq_mi, y = pct_white)) +
+  geom_point(alpha = 0.2) +
+  scale_x_log10() +
+  #scale_y_log10() +
+  geom_smooth(method = "lm") +
+  labs(title = "US County density vs % White")
+ggsave("county_density_vs_white_linear.png", width = 9, height = 6, dpi = 150)
+
+county_demo_land %>% 
+  ggplot(aes(x = person_per_sq_mi, y = pct_black)) +
+  geom_point(alpha = 0.2) +
+  scale_x_log10() +
+  scale_y_log10() +
+  geom_smooth(method = "lm") +
+  labs(title = "US County density vs % Black")
+ggsave("county_density_vs_black.png", width = 9, height = 6, dpi = 150)
+
+county_demo_land %>% 
+  ggplot(aes(x = person_per_sq_mi, y = pct_asian)) +
+  geom_point(alpha = 0.2) +
+  scale_x_log10() +
+  scale_y_log10() +
+  geom_smooth(method = "lm") +
+  labs(title = "US County density vs % Asian")
+ggsave("county_density_vs_asian.png", width = 9, height = 6, dpi = 150)
+
+county_demo_land %>% 
+  ggplot(aes(x = person_per_sq_mi, y = pct_indian)) +
+  geom_point(alpha = 0.2) +
+  scale_x_log10() +
+  scale_y_log10() +
+  geom_smooth(method = "lm") +
+  labs(title = "US County density vs % Native American")
+ggsave("county_density_vs_nativeamerican.png", width = 9, height = 6, dpi = 150)
+
+county_demo_land %>% 
+  ggplot(aes(x = person_per_sq_mi, y = pct_pacific)) +
+  geom_point(alpha = 0.2) +
+  scale_x_log10() +
+  scale_y_log10() +
+  geom_smooth(method = "lm") +
+  labs(title = "US County density vs % Native Hawaiian or Pacific Islander")
+ggsave("county_density_vs_pacificislander.png", width = 9, height = 6, dpi = 150)
+
+
+county_demo_land %>% 
+  filter(state == "New York") %>% 
+ggplot(aes(person_per_sq_mi, pct_black)) +
+  geom_point(alpha = 0.3) +
+  #geom_smooth(method = "loess") +
+  scale_x_log10() +
+  labs(title = "Counties",
+       x = "County Density",
+       y = "% Black")
+
+
+#-----
+votes_blk <- county_votes %>% 
   select(county, party, votes) %>% 
   group_by(county, party) %>% 
   summarize(votes = sum(votes)) %>% 
@@ -66,13 +183,45 @@ df_vote_pct <- df_master %>%
          d_pct = round(Democratic * 100 / total_votes, 3),
          r_pct = round(Republican * 100 / total_votes, 3) ,
          i_pct = round(Independent * 100 / total_votes, 3) ) %>% 
-  #arrange(desc(i_pct)) %>% 
+  inner_join(tn_demo, by = "county")
+
+votes_blk %>% 
+  ggplot(aes(x = pct_black, y = d_pct)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(title = "2020 Presidential Election",
+       subtitle = "TN Counties",
+       x = "% black in county",
+       y = "% Biden vote")
+
+#----- 
+df %>% 
+  group_by(candidate) %>% 
+  summarise(votes = sum(votes)) %>% 
+  arrange(desc(votes))
+
+df %>% 
+  filter(candidate == "Donald J. Trump") %>% 
+  arrange(desc(percent)) %>% 
+  select(county, votes, percent)
+
+#----- spreadsheet output -----
+df_vote_pct <- df %>% 
+  select(county, party, votes) %>% 
+  group_by(county, party) %>% 
+  summarize(votes = sum(votes)) %>% 
+  pivot_wider(names_from = party, values_from = votes) %>% 
+  mutate(total_votes = Democratic + Independent + Republican,
+         d_pct = round(Democratic * 100 / total_votes, 3),
+         r_pct = round(Republican * 100 / total_votes, 3) ,
+         i_pct = round(Independent * 100 / total_votes, 3) ) %>% 
   inner_join(county_pop_tn, by = "county") %>% 
   mutate(pct_that_voted = round(total_votes* 100 / pop_2018, 3) ) %>% 
   arrange(county)
 
 write_csv(df_vote_pct, "C:/GitHub/r-sandbox01/output/tn_2020_presidential_election.csv")
 
+#----- Select counties -----
 df_vote_pct %>% 
   filter(county %in% c("Shelby", "Davidson", "Williamson", "Rutheford", "Maury", "Knox", "Wilson")) %>% 
   arrange(desc(d_pct)) %>% 
@@ -80,9 +229,17 @@ df_vote_pct %>%
   select(county, name, val) %>% 
   ggplot(aes(x = county, y = val, fill = name)) +
   geom_col(position = "stack") +
-  scale_fill_manual(values = c("#6666ff", "#66cc66", "#ff6666"))
-  
-# Kanye vote
+  scale_fill_manual(values = c("#6666ff", "#66cc66", "#ff6666"),
+                    labels = c("Dem", "Ind", "Rep"),
+                    name = "Party")+
+  labs(title = "TN 2020 Presidential election",
+       subtitle = "Select TN counties",
+       x = "Count",
+       y = "Percent",
+       caption = "data: https://www.elections.tn.gov/county-results.php?OfficeByCounty=United%20States%20President")
+
+
+#----- Kanye vote -----
 df_master %>% 
   filter(candidate == "Kanye West") %>% 
   arrange(desc(votes)) %>% 
@@ -92,127 +249,27 @@ df_master %>%
   mutate(pct_of_pop = round(votes * 100 / pop_2018, 3))
 
 
+
 df_vote_pct %>% 
   ggplot(aes(x = pop_2018, y = r_pct))+
   geom_point() +
   geom_smooth(method = "loess", se = F)+
-  labs(title = "County Population vs Republican vote %",
-       x = "County Population (2018)",
-       y = "Republican Vote %")
+  labs(title = "County Population vs Trump 2020 vote %",
+       x = "TN County Population (2018)",
+       y = "Trump 2020 Vote %")
 
+mod <- lm(d_pct ~ pop_2018, data = df_vote_pct)
+summary(mod)
 
-#----- Ch 4 Web scraping with XPATHs -----
-install.packages("rvest")  # web scraping package
-install.packages("xml2")
-library(xml2)
-library(rvest)
-# html_text()  html_attr() html_name() html_node() 
-# html_table() extract html table to data frame
-# data.frame() with vectors of text to put them into data frames
-
-test_url <- "https://en.wikipedia.org/wiki/Hadley_Wickham"  # Hadley Wickham's Wikipedia page
-test_url <- "https://www.elections.tn.gov/county-results.php?OfficeByCounty=United%20States%20President"
-test_xml <- read_html(test_url)  # Read the URL stored as "test_url" with read_html()
-test_xml  # Print test_xml
-
-test_node_xpath <- "//*[contains(concat( \" \", @class, \" \" ), concat( \" \", \"vcard\", \" \" ))]"
-test_node_xpath <- ""
-node <- html_node(x = test_xml, xpath = test_node_xpath)  # Use html_node() to grab the node with the XPATH stored as `test_node_xpath`
-node[1]  # Print the first element of the result
-
-element_name <- html_name(x = node)  # Extract the name of table_element
-element_name  # Print the name
-
-table_element <- node
-second_xpath_val <- "//*[contains(concat( \" \", @class, \" \" ), concat( \" \", \"fn\", \" \" ))]"
-page_name <- html_node(x = table_element, xpath = second_xpath_val)  # Extract the element of table_element referred to by second_xpath_val and store it as page_name
-page_title <- html_text(page_name)  # Extract the text from page_name
-page_title  # Print page_title
-
-wiki_table <- html_table(table_element)  # Turn table_element into a data frame and assign it to wiki_table
-wiki_table  # Print wiki_table
-
-colnames(wiki_table) <- c("key", "value")  # Rename the columns of wiki_table
-cleaned_table <- subset(wiki_table, !key == "")  # Remove the empty row from wiki_table
-cleaned_table  # Print cleaned_table
-
-
-#----- Ch 5 CSS Web Scraping and Final Case Study -----
-# use html_nodes() but with css argument
-
-html_nodes(test_xml, css = "table")  # Select the table elements
-html_nodes(test_xml, css = ".infobox")  # Select elements with class = "infobox"
-html_nodes(test_xml, css = "#firstHeading")  # Select elements with id = "firstHeading"
-
-infobox_element <- html_nodes(test_xml, css = ".infobox")  # Extract element with class infobox
-element_name <- html_name(infobox_element)  # Get tag name of infobox_element
-element_name  # Print element_name
-
-page_name <- html_node(x = infobox_element, css = ".fn")  # Extract element with class fn
-page_title <- html_text(page_name)  # Get contents of page_name
-page_title  # Print page_title
-
-#--- final exercise
-library(httr)
-base_url <- "https://en.wikipedia.org/w/api.php"  # The API url
-query_params <- list(action = "parse",   # Set query parameters
-                     page = "Hadley Wickham", 
-                     format = "xml")
-resp <- GET(url = base_url, query = query_params)  # Get data from API
-resp_xml <- content(resp)  # Parse response
-
-
-library(rvest)  # Load rvest
-page_html <- read_html(xml_text(resp_xml))  # Read page contents as HTML
-infobox_element <- html_node(page_html, css = ".infobox")  # Extract infobox element
-page_name <- html_node(infobox_element, css = ".fn")  # Extract page name element from infobox
-page_title <- html_text(page_name)  # Extract page name as text
-
-
-# Your code from earlier exercises
-wiki_table <- html_table(infobox_element)
-colnames(wiki_table) <- c("key", "value")
-cleaned_table <- subset(wiki_table, !key == "")
-
-name_df <- data.frame(key = "Full name", value = page_title)  # Create a dataframe for full name
-wiki_table2 <- rbind(name_df, cleaned_table)  # Combine name_df with cleaned_table
-wiki_table2  # Print wiki_table
-
-
-
-#-- functionize the code
-library(httr)
-library(rvest)
-library(xml2)
-
-get_infobox <- function(title){
-  base_url <- "https://en.wikipedia.org/w/api.php"
+ggplot(df_vote_pct, aes(y = pop_2018)) +
+  geom_boxplot() +
+  scale_x_manual(name = "") +
+  labs(title = "TN County Populations",
+       x = "",
+       y = "Population (2018)")
   
-  query_params <- list(action = "parse", 
-                       page = title,    # title param
-                       format = "xml")
-  resp <- GET(url = base_url, query = query_params)
-  resp_xml <- content(resp)
-  
-  page_html <- read_html(xml_text(resp_xml))
-  infobox_element <- html_node(x = page_html, css =".infobox")
-  page_name <- html_node(x = infobox_element, css = ".fn")
-  page_title <- html_text(page_name)
-  
-  wiki_table <- html_table(infobox_element)
-  colnames(wiki_table) <- c("key", "value")
-  cleaned_table <- subset(wiki_table, !wiki_table$key == "")
-  name_df <- data.frame(key = "Full name", value = page_title)
-  wiki_table <- rbind(name_df, cleaned_table)
-  
-  wiki_table
-}
 
-# Test get_infobox with "Hadley Wickham"
-get_infobox(title = "Hadley Wickham")
+summary(df_vote_pct$pop_2018)
 
-# Try get_infobox with "Ross Ihaka"
-get_infobox(title = "Ross Ihaka")
 
-# Try get_infobox with "Grace Hopper"
-get_infobox(title = "Grace Hopper")
+

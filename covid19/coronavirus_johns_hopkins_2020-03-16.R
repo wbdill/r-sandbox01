@@ -248,7 +248,7 @@ jh_daily %>%
   select(Country, PopMillions, Confirmed, ConfirmedPerMill, Deaths, DeathsPerMill, MortalityRate) %>%
   arrange(desc(ConfirmedPerMill)) %>%
   top_n(150) %>%
-  write_csv(path = "output/jh_covid19_countries_CDM_per_pop.csv")
+  write_csv(file = "output/jh_covid19_countries_CDM_per_pop.csv")
   
 
 #----- JH State/County level data (not used) -----
