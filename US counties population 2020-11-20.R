@@ -1,15 +1,16 @@
 
 
 library(tidyverse)
+library(scales)
+library(RColorBrewer)
 rm(list = ls())
-setwd("D:/opendata/county_demographics")
 
 # https://www.census.gov/data/tables/time-series/demo/popest/2010s-counties-detail.html
 # https://www2.census.gov/programs-surveys/popest/datasets/2010-2019/counties/asrh/cc-est2019-alldata.csv
 
-pop <- read_csv("cc-est2019-alldata.csv")  # 170MB
-str(pop)
-head(pop)
+pop_raw <- read_csv("D:/opendata/county_demographics/cc-est2019-alldata.csv")  # 170MB
+str(pop_raw)
+head(pop_raw)
 
 
 # https://nces.ed.gov/ipeds/report-your-data/race-ethnicity-definitions
@@ -22,9 +23,22 @@ head(pop)
 # Native Hawaiian or Other Pacific Islander
 # White
 
+state_abbrev <- data.frame(
+  stringsAsFactors = FALSE,
+           state = c("Alabama", "Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware",
+                       "Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine",
+                       "Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada",
+                       "New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma",
+                       "Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont",
+                       "Virginia","Washington","West Virginia","Wisconsin",
+                       "Wyoming"),
+            state_abbrev = c("AL", "AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS",
+                       "KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH",
+                       "OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY")
+)
 
 # YEAR 1 = 2010 census, YEAR > 3 = 2011-2019 estimates
-pop_simp <- pop %>% filter(AGEGRP == 0, (YEAR > 3 | YEAR == 1)) %>% 
+pop_race_simp <- pop_raw %>% filter(AGEGRP == 0, (YEAR > 3 | YEAR == 1)) %>% 
   mutate(FIPS = paste0(STATE, COUNTY),
          STFIPS = STATE,
          COFIPS = COUNTY,
@@ -40,9 +54,39 @@ pop_simp <- pop %>% filter(AGEGRP == 0, (YEAR > 3 | YEAR == 1)) %>%
          two_pop = TOM_MALE + TOM_FEMALE,
          not_hisp_pop = NH_MALE + NH_FEMALE,
          hisp_pop = H_MALE + H_FEMALE) %>% 
-  select(FIPS, STFIPS, COFIPS, state, county, year, pop, white_pop, black_pop, indian_pop, pacific_pop, two_pop, not_hisp_pop, hisp_pop)
+  inner_join(state_abbrev, by = "state") %>% 
+  select(FIPS, STFIPS, COFIPS, state_abbrev, state, county, year, pop, white_pop, black_pop, asian_pop, indian_pop, pacific_pop, two_pop, not_hisp_pop, hisp_pop)
 
-write_csv(pop_simp, "county_census_est_race_eth_2010_2019.csv")
+write_csv(pop_race_simp, "US_county_census_est_race_eth_2010_2019.csv")
+
+
+#----- race proportion for every county in the state -----
+PlotRaceProportion <- function(x) {
+  state_name <- x$state
+  state_abbrev <- x$state_abbrev
+  gtitle = paste("County Race Proportions - ", state_name)
+  
+  pop_race_simp %>% 
+    filter(state == state_name, year == 2019) %>%
+    pivot_longer(cols = ends_with("_pop"), names_to = "race", values_to = "population") %>% 
+    mutate(race = str_remove(race, "_pop")) %>% 
+    filter(!race %in% c("hisp", "not_hisp")) %>% 
+    ggplot(aes(county, population, group = "race")) +
+    geom_col(aes(fill = race), position = "fill") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size = 6)) +
+    scale_y_continuous(labels = scales::percent) +
+    scale_fill_manual(values = brewer.pal(n = 6, name = "RdYlBu")) +
+    labs(title = gtitle,
+         subtitle = "2019 Census Estimate",
+         caption = "@bdill Data: US Census cc-est2019-alldata.csv")
+  
+  filename <- paste0("output/census/county_race_proportion/county_race_proportion_", state_abbrev, ".png")
+  ggsave(filename = filename, width = 9, height = 6, dpi = 250)  
+}
+by(state_abbrev, 1:nrow(state_abbrev), PlotRaceProportion)
+?by
+
+
 
 
 tn_pop_delta <- pop_simp %>% 
@@ -82,5 +126,32 @@ tn_pop_delta %>%
        y = "Population",
        caption = "@bdill  Data: US Census cc-est2019-alldata.csv")
 ggsave("TN_county_growth_2010s_bottom.png", width = 7, height = 5, dpi = 150)
+
+
+#----- TN counties hispanic
+pop_simp %>% 
+  filter(STFIPS == 47, year == 2019) %>% 
+  mutate(hisp_pct = hisp_pop * 100 / pop,
+         black_pct = black_pop * 100 / pop,
+         asian_pct = asian_pop * 100 / pop) %>% 
+  arrange(desc(asian_pct)) %>% 
+  select(FIPS, state, county, pop, black_pop, black_pct, asian_pop, asian_pct, hisp_pop, hisp_pct) %>% 
+  ggplot(aes(reorder(county, desc(asian_pct)), asian_pct)) +
+  geom_col()
+
+pop_simp %>% count(STFIPS, state) %>% View()
+
+
+
+
+
+#setwd("C:/GitHub/r-sandbox01")
+ggplot(dat, aes( reorder(county, desc(population)), population, group = "race")) +
+  geom_col(aes(fill = factor(race, levels = c("white", "black", "asian", "indian", "pacific", "two")) ), position = "dodge2") +
+  scale_fill_discrete(name = "Race") +
+  labs(title = "Most Populous TN Counties",
+       x = "County",
+       y = "Population") +
+  scale_y_continuous(labels = comma)
 
 
