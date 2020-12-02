@@ -89,7 +89,8 @@ by(state_abbrev, 1:nrow(state_abbrev), PlotRaceProportion)
 
 
 
-tn_pop_delta <- pop_simp %>% 
+#----- TN counties 2010 vs 2019 pop change
+tn_pop_delta <- pop_race_simp %>% 
   filter(STFIPS == 47) %>% 
   filter(year %in% c(2010, 2019)) %>% 
   select(FIPS, state, county, year, pop) %>% 
@@ -101,6 +102,7 @@ tn_pop_delta <- pop_simp %>%
 write_csv(tn_pop_delta, "TN_county_pop_delta_2010_2019.csv")
 # saved to https://docs.google.com/spreadsheets/d/1ivOzLBZJzAgRmX8wZn9yXF7UETPCc8d8GZMFxENRqhw/edit#gid=0
 
+#----- Top 5 growth TN counties -----
 tn_pop_delta %>% 
   pivot_longer(cols = c("pop_2010", "pop_2019"), names_prefix = "pop_", names_to = "year", values_to = "pop") %>% 
   arrange(desc(delta_pct), FIPS) %>% 
@@ -114,6 +116,7 @@ tn_pop_delta %>%
        caption = "@bdill  Data: US Census cc-est2019-alldata.csv")
 ggsave("TN_county_growth_2010s_top.png", width = 7, height = 5, dpi = 150)
 
+#----- Bottom 5 growth TN counties -----
 tn_pop_delta %>% 
   pivot_longer(cols = c("pop_2010", "pop_2019"), names_prefix = "pop_", names_to = "year", values_to = "pop") %>% 
   arrange(desc(delta_pct), FIPS) %>% 
@@ -129,29 +132,23 @@ ggsave("TN_county_growth_2010s_bottom.png", width = 7, height = 5, dpi = 150)
 
 
 #----- TN counties hispanic
-pop_simp %>% 
+pop_race_simp %>% 
   filter(STFIPS == 47, year == 2019) %>% 
   mutate(hisp_pct = hisp_pop * 100 / pop,
          black_pct = black_pop * 100 / pop,
          asian_pct = asian_pop * 100 / pop) %>% 
   arrange(desc(asian_pct)) %>% 
   select(FIPS, state, county, pop, black_pop, black_pct, asian_pop, asian_pct, hisp_pop, hisp_pct) %>% 
-  ggplot(aes(reorder(county, desc(asian_pct)), asian_pct)) +
+  ggplot(aes(reorder(county, desc(hisp_pct)), hisp_pct)) +
   geom_col()
 
-pop_simp %>% count(STFIPS, state) %>% View()
+#----- Counties per state
+pop_race_simp %>% 
+  filter(year == 2019) %>% 
+  count(STFIPS, state) %>% 
+  arrange(desc(n)) %>% 
+  View()
 
 
-
-
-
-#setwd("C:/GitHub/r-sandbox01")
-ggplot(dat, aes( reorder(county, desc(population)), population, group = "race")) +
-  geom_col(aes(fill = factor(race, levels = c("white", "black", "asian", "indian", "pacific", "two")) ), position = "dodge2") +
-  scale_fill_discrete(name = "Race") +
-  labs(title = "Most Populous TN Counties",
-       x = "County",
-       y = "Population") +
-  scale_y_continuous(labels = comma)
 
 
