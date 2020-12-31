@@ -26,7 +26,6 @@ summary(ma_data_init)
 
 glimpse(ma_data_init$Town)
 summary(ma_data_init$Town)
-glimpse(ma_data_init$AP_Test Takers)
 glimpse(ma_data_init$`AP_Test Takers`)
 summary(ma_data_init$`AP_Test Takers`)
 
