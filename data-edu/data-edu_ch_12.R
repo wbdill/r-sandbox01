@@ -15,7 +15,8 @@ rm(list = ls())
 # 12.4.3 Data Sources and Import
 tt_tweets <- search_tweets("#trump", n = 2500)
 
-glimpse(tt_tweets)
+#tt_tweets <- dataedu::tt_tweets  # sample data from dataedu pkg
+
 
 tt_tweets %>% 
   select(user_id, status_id, created_at, screen_name, retweet_count, text) %>% 
@@ -24,7 +25,7 @@ tt_tweets %>%
 
 #randomNames(100, ethnicity = c(3,4,5), return.complete.data = T)
 
-#tt_tweets <- dataedu::tt_tweets
+
 
 # 12.6.1
 regex <- "@([A-Za-z]+[A-Za-z0-9_]+)(?![A-Za-z0-9_]*\\.)"
