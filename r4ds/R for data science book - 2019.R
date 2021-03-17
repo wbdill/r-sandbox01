@@ -94,4 +94,12 @@ read_csv("a,b,c\n1,2,.", na = ".")
 x <- parse_integer(c("123", "345", "abc", "123.45"))
 problems(x) # the set of import/parsing problems
 
-?read_csv2
+#11.4 Parsing a file
+x <- read_csv("a,b,c\n1,2,.", na = ".")
+install.packages("feather")
+library(feather)
+write_feather(mtcars, "x_mtcars.feather")
+write_csv(mtcars, "x_mtcars.csv")
+mtcars
+
+
