@@ -119,7 +119,7 @@ by(state_pop, 1:nrow(state_pop), MapStateVarious)
 
 
 #--- Misc EDA
-state_name <- "South Dakota"
+state_name <- "Mississippi"
 nyt_counties %>%
   filter(state == state_name ) %>%  #& county %in% pull(top7_counties, county)
   group_by(state, date) %>% 
@@ -222,10 +222,11 @@ ggsave(filename = "output/nytimes_new_deaths_per_m_states.png", width = 16, heig
 #----- Manual EDA -----
 
 nyt_counties %>%
-  filter(state == "Tennessee" ) %>%  #& county %in% pull(top7_counties, county)
+  filter(state == "Mississippi" ) %>%  #& county %in% pull(top7_counties, county)
   #filter(county %in% c("Rutherford", "Williamson", "Wilson")) %>%
-  filter(county %in% c("Shelby", "Davidson", "Williamson")) %>% 
+  filter(county %in% c("Lowndes", "Clay", "Oktibbeha")) %>% 
   #filter(state == "state_name"Tennessee" ) %>%
+  filter(date >= "2020-11-01") %>% 
   group_by(state, county, date) %>% 
   select(date, state, county, cases, deaths) %>% 
   mutate(cases = sum(cases),
@@ -243,15 +244,45 @@ nyt_counties %>%
          new_deaths_per_m_avg7 = rollmean(new_deaths_per_m, 7, fill = NA, align="right") ) %>% 
   #View()  
   ggplot() +
-  geom_line(aes(date, new_cases_avg7, group = county, color = county) ,size = .5) +
+  geom_line(aes(date, new_cases_avg7, group = county) ,size = 1, color = "red") +
   geom_col(aes(date, new_cases), fill = "blue", alpha = .3) +
   facet_wrap(~ county) +
-  labs(title = "New COVID19 Cases - South Dakota",
+  labs(title = "New COVID19 Cases - Mississippi",
        subtitle = "Red line is 7 day avg",
        y = "New Cases",
        caption = "graph: @bdill   data: https://github.com/nytimes/covid-19-data/blob/master/us-counties.csv")
 
-ggsave(filename = "output/nytimes_new_cases_TN02.png", width = 16, height = 10, units = "cm")
+ggsave(filename = "output/nytimes_new_cases_MS02.png", width = 16, height = 10, units = "cm")
+
+nyt_counties %>%
+  filter(state == "Mississippi" ) %>%  #& county %in% pull(top7_counties, county)
+  filter(date >= "2020-11-01") %>% 
+  group_by(state, date) %>% 
+  select(date, state, cases, deaths) %>% 
+  mutate(cases = sum(cases),
+         deaths = sum(deaths)) %>% 
+  distinct() %>% 
+  group_by(state) %>% 
+  inner_join(state_pop, by = "state") %>% 
+  mutate(cases_per_m = cases / (population / 1000000), 
+         new_cases = cases - dplyr::lag(cases), 
+         new_cases_avg7 = rollmean(new_cases, 7, fill = NA, align="right"),
+         new_cases_per_m = new_cases / (population / 1000000),
+         new_cases_per_m_avg7 = rollmean(new_cases_per_m, 7, fill = NA, align="right"),
+         new_deaths = deaths - dplyr::lag(deaths), 
+         new_deaths_per_m = new_deaths / (population / 1000000),
+         new_deaths_per_m_avg7 = rollmean(new_deaths_per_m, 7, fill = NA, align="right") ) %>% 
+  #View()  
+  ggplot() +
+  geom_line(aes(date, new_cases_avg7) ,size = 1, color = "red") +
+  geom_col(aes(date, new_cases), fill = "blue", alpha = .3) +
+  labs(title = "New COVID19 Cases - Mississippi",
+       subtitle = "Red line is 7 day avg",
+       y = "New Cases",
+       caption = "graph: @bdill   data: https://github.com/nytimes/covid-19-data/blob/master/us-counties.csv")
+
+ggsave(filename = "output/nytimes_new_cases_MS03.png", width = 16, height = 10, units = "cm")
+
 
 nyt_counties %>%
   filter(state == "Tennessee" & county == "Davidson") %>%
