@@ -42,7 +42,7 @@ genfile <- function(year) {
     value1 = runif(n, 0, 100),
     is_active = sample(c(0,1), replace = T, size = n)
   )
-  write_csv(dt, paste0("file", year, ".csv"))
+  write_csv(dt, paste0("merge/file", year, ".csv"))
   
 }
 genfile(2010)
