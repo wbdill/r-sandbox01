@@ -1,5 +1,8 @@
 library(tidyverse)
+library(readxl)
+rm(list = ls())
 
+#----- pivot_wider / pivot_longer -----
 dat <- data.frame(year = rep(seq(2011,2020), each = 3), 
                   location = rep(c("beach", "park", "lake"), 10), 
                   N = round(runif(30, 10, 100), 0))
@@ -45,6 +48,7 @@ genfile <- function(year) {
   write_csv(dt, paste0("merge/file", year, ".csv"))
   
 }
+
 genfile(2010)
 genfile(2011)
 genfile(2012)
@@ -69,3 +73,16 @@ dt %>% transmute(
   x = data,
   file = str_replace_all(file, "csv", "txt")
 ) %>% pmap(write_tsv)
+
+#----- Excel file ingestion -----
+xlpath = "merge/file2010-2019.xlsx"
+excel_sheets(xlpath)
+
+# a list with each list element a tibble of each xl sheet
+lstxl <- excel_sheets(xlpath) %>% 
+  map(~read_xlsx(xlpath, .))
+lstxl[[1]][1:5,]
+
+# all into a single table
+dfxl <- excel_sheets(xlpath) %>% 
+  map_df(~read_xlsx(xlpath, .))
