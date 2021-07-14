@@ -56,11 +56,11 @@ votevax <- pres2 %>% inner_join(vax2, by = c("county_fips", "state")) %>%
   filter(complete_pop_pct > 0)  # filter out zero values b/c they are probably just missing.
 
 votevax %>%
-  filter(state %in% c("CO", "TN", "MS", "CA", "FL", "GA")) %>% 
+  filter(state %in% c("CO", "TN", "MS", "CA", "FL", "MI")) %>% 
   ggplot(aes(x = dem_pct, y = complete_pop_pct)) +
   geom_point(aes( size = tot_votes/100000), alpha = .2) +
   geom_smooth(color = "blue", method = "lm") +
-  facet_wrap(~state)+
+  facet_wrap(~state) +
   scale_size_continuous("Tot Votes \n(x100000)") +
     labs(title="Voted Biden in 2020 vs Completely Vaccinated",
        subtitle = "County Level",
