@@ -10,6 +10,7 @@ pres <- read_csv(path)
 
 # pres %>% filter(year == 2020, county_fips == 40001)  # multiple modes
 
+
 pres2 <- pres %>% filter(year == 2020) %>% 
   select(state_abb = state_po,
          county = county_name,
@@ -43,14 +44,16 @@ vax2 <- vax %>% filter(Date == "2021-07-12") %>%
          complete_pop_pct = Series_Complete_Pop_Pct, dose1_pop_pct = Administered_Dose1_Pop_Pct)
 
 #----- votes vs vax -----
-join <- pres2 %>% inner_join(vax2, by = c("county_fips", "state_abb" = "state")) %>% 
-  select(state_abb, county = county.x, DEMOCRAT, complete_pop_pct, dose1_pop_pct, tot_votes)
+votevax <- pres2 %>% inner_join(vax2, by = c("county_fips", "state_abb" = "state")) %>% 
+  select(state = state_abb, county = county.x, dem_pct = DEMOCRAT, rep_pct = REPUBLICAN, complete_pop_pct, dose1_pop_pct, tot_votes) %>% 
+  filter(complete_pop_pct > 0)
 
-join %>% 
-  ggplot(aes(x = DEMOCRAT, y = complete_pop_pct)) +
+votevax %>%
+  filter(state %in% c("CO", "TN", "MS", "CA", "FL", "GA")) %>% 
+  ggplot(aes(x = dem_pct, y = complete_pop_pct)) +
   geom_point(aes( size = tot_votes/100000), alpha = .2) +
-  #geom_smooth(color = "blue", size = 1) +
   geom_smooth(color = "blue", method = "lm") +
+  facet_wrap(~state)+
   scale_size_continuous("Tot Votes \n(x100000)") +
     labs(title="Voted Biden in 2020 vs Completely Vaccinated",
        subtitle = "County Level",
@@ -58,10 +61,11 @@ join %>%
        y = "pct of population completely vaccinated",
        caption = "Pres. Elec.: dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/VOQCHQ\n Vax: data.cdc.gov/Vaccinations/COVID-19-Vaccinations-in-the-United-States-County/8xkx-amqh")
 
-lm <- lm(complete_pop_pct ~ DEMOCRAT, data = join)
+lm <- lm(complete_pop_pct ~ dem_pct, data = votevax)
 summary(lm)
 
-pres2 %>% inner_join(vax2, by = c("county_fips", "state_abb" = "state")) %>% 
-  select(state_abb, county = county.x, DEMOCRAT, complete_pop_pct, dose1_pop_pct, tot_votes) %>% 
+votevax %>% 
   filter(state_abb == "TN", county == "WILLIAMSON") %>% 
   arrange(desc(tot_votes)) 
+
+write_csv(votevax, "D:/opendata/vote_2020_vax_2021.csv")
