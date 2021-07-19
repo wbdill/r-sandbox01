@@ -101,8 +101,10 @@ votevax %>%
   ggplot(aes(x = pct_dem, y = complete_pop_pct)) +
   geom_point(aes( size = tot_votes/100000), alpha = .2) +
   geom_smooth(color = "blue", method = "lm") +
-  facet_wrap(~state) +
   scale_size_continuous("Tot Votes \n(x100000)") +
+  ylim(0,100) +
+  facet_wrap(~state) +
+  
     labs(title="Voted Biden in 2020 vs Completely Vaccinated ",
        subtitle = "County Level - Vaccinations as of 2021-07-12",
        x = "% voted for Biden in 2020",
