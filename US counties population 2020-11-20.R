@@ -1,17 +1,42 @@
-
-
 library(tidyverse)
 library(scales)
 library(RColorBrewer)
 rm(list = ls())
 
+
+state_abbrev <- data.frame(
+  stringsAsFactors = FALSE,
+  state = c("Alabama", "Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware",
+            "Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine",
+            "Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada",
+            "New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma",
+            "Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont",
+            "Virginia","Washington","West Virginia","Wisconsin",
+            "Wyoming"),
+  state_abbrev = c("AL", "AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS",
+                   "KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH",
+                   "OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY")
+)
+#----- 2020 simple population estimates by county -----
+# https://www2.census.gov/programs-surveys/popest/datasets/2010-2020/counties/totals/co-est2020-alldata.csv # 4MB
+pop_raw <- read_csv("D:/opendata/census.gov/county_pop_totals_2010_2020/co-est2020-alldata.csv")  
+pop_clean <- pop_raw %>% filter(SUMLEV == "050") %>% 
+  mutate(fips_county = paste0(STATE,COUNTY)) %>% 
+  full_join(state_abbrev, by = c("STNAME" = "state")) %>% 
+  select(region = REGION, division = DIVISION, fips_state = STATE, fips_county, fips_county3 = COUNTY, state = STNAME, state_abbrev, county = CTYNAME, 
+         pop_2010_census = CENSUS2010POP, pop_2010 = POPESTIMATE2010, pop_2011 = POPESTIMATE2011, pop_2012 = POPESTIMATE2012,
+         pop_2013 = POPESTIMATE2013, pop_2014 = POPESTIMATE2014, pop_2015 = POPESTIMATE2015, pop_2016 =POPESTIMATE2016, 
+         pop_2017 = POPESTIMATE2017, pop_2018 = POPESTIMATE2018, pop_2019 = POPESTIMATE2019, pop_2020 = POPESTIMATE2020)
+
+write_csv(pop_clean, "D:/opendata/census.gov/county_pop_totals_2010_2020/census_county_pop.csv")
+
+#----- 2019 full demographics -----
 # https://www.census.gov/data/tables/time-series/demo/popest/2010s-counties-detail.html
 # https://www2.census.gov/programs-surveys/popest/datasets/2010-2019/counties/asrh/cc-est2019-alldata.csv
 
 pop_raw <- read_csv("D:/opendata/county_demographics/cc-est2019-alldata.csv")  # 170MB
 str(pop_raw)
 head(pop_raw)
-
 
 # https://nces.ed.gov/ipeds/report-your-data/race-ethnicity-definitions
 # Hispanic or Latino
@@ -23,19 +48,7 @@ head(pop_raw)
 # Native Hawaiian or Other Pacific Islander
 # White
 
-state_abbrev <- data.frame(
-  stringsAsFactors = FALSE,
-           state = c("Alabama", "Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware",
-                       "Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine",
-                       "Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada",
-                       "New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma",
-                       "Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont",
-                       "Virginia","Washington","West Virginia","Wisconsin",
-                       "Wyoming"),
-            state_abbrev = c("AL", "AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS",
-                       "KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH",
-                       "OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY")
-)
+
 
 # YEAR 1 = 2010 census, YEAR > 3 = 2011-2019 estimates
 pop_race_simp <- pop_raw %>% filter(AGEGRP == 0, (YEAR > 3 | YEAR == 1)) %>% 

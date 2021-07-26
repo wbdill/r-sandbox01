@@ -61,15 +61,17 @@ pres_pop <- pres20 %>%
 dat <- cases %>%
   inner_join(pres_pop, by = c("state_po")) %>% 
   mutate(tot_cases_pct = tot_cases*100 / pop,
-         tot_cases_per_k = tot_cases / (pop/1000))
+         tot_cases_per_k = tot_cases / (pop/1000)) %>% 
+  select(submission_date, state_po, tot_cases, new_case, tot_death, new_death, tot_cases_pct, tot_cases_per_k) %>% 
+  arrange(state_po, submission_date)
 
-dat %>% filter(submission_date == "2021-07-14") %>% arrange((tot_cases_per_k)) %>%
-  select(state, tot_cases_per_k, pop, pct_dem, pct_rep) %>% View()
+#dat %>% filter(submission_date == "2021-07-14") %>% arrange((tot_cases_per_k)) %>% select(state, tot_cases_per_k, pop, pct_dem, pct_rep) %>% View()
 
-dat %>% filter(state_po %in% c("HI", "VT", "OR", "ME", "NY", "ND", "RI", "SD", "UT", "TN")) %>% 
-  ggplot(aes(x = submission_date, y = tot_cases_per_k, group = state, color = pct_dem)) +
+dat %>% #filter(state_po %in% c("HI", "VT", "OR", "ME", "NY", "ND", "RI", "SD", "UT", "TN")) %>% 
+  filter(state_po %in% c("TX", "AL", "GA", "MS", "HI", "ND")) %>% 
+  ggplot(aes(x = submission_date, y = tot_cases_per_k, group = state, color = state)) +
   geom_line(size = 1.2, alpha = 1) +
-  scale_color_gradient2(low = "#ff0000", high = "#0000ff", mid="#ffddff", midpoint = 50) +
+  #scale_color_gradient2(low = "#ff0000", high = "#0000ff", mid="#ffddff", midpoint = 50) +
   labs(title = "COVID19 Cases Over Time",
        subtitle = "Top / Bottom 5 States\nColor = % voted Biden in 2020",
        color = "% Biden",

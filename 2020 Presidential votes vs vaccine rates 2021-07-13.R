@@ -7,14 +7,14 @@ library(tidyverse)
 
 #----- Presidential election results by county (Harvard) -----
 # https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/VOQCHQ
-path <- "D:/opendata/PresidentialElection2000_2020/countypres_2000-2020.csv"
+path <- "D:/opendata/PresidentialElection2000_2020_county/countypres_2000-2020.csv"
 pres <- read_csv(path)
 
-pres %>% group_by(year, party) %>% count() %>% View()
+#pres %>% group_by(year, party) %>% count() %>% View()
 
 # pres %>% filter(year == 2020, county_fips == 40001)  # multiple modes, so we need to summarize.
 
-pres %>% filter(year == 2020) %>% write_csv("D:/opendata/PresidentialElection2000_2020/countypres_2020.csv")
+#pres %>% filter(year == 2020) %>% write_csv("D:/opendata/PresidentialElection2000_2020/countypres_2020.csv")
 
 pres2 <- pres %>% #filter(year == 2020) %>% 
   select(year,
@@ -44,7 +44,7 @@ pres2 <- pres %>% #filter(year == 2020) %>%
   pivot_wider(names_from = party, values_from = c(votes, pct), values_fill = 0) %>% 
   arrange(year, state, county)
 
-write_csv(pres2, "D:/opendata/PresidentialElection2000_2020/countypres_2000_2020_munged.csv")
+#write_csv(pres2, "D:/opendata/PresidentialElection2000_2020/countypres_2000_2020_munged.csv")
 
 # select counties change over time 2000-2020
 pres2 %>% 
@@ -94,10 +94,11 @@ votevax <- pres2020 %>% inner_join(vax2, by = c("county_fips", "state")) %>%
          dose1_pop_pct) %>% 
   filter(complete_pop_pct > 0)  # filter out zero values b/c they are probably just missing.
 
-write_csv(votevax, "D:/opendata/vote_2020_vax_2021.csv")
+#write_csv(votevax, "D:/opendata/vote_2020_vax_2021.csv")
 
 votevax %>%
   #filter(state %in% c("CO", "TN", "MS", "CA", "MO", "KY")) %>% 
+  filter(state %in% c("TX", "AL", "GA", "MS")) %>% 
   ggplot(aes(x = pct_dem, y = complete_pop_pct)) +
   geom_point(aes( size = tot_votes/100000), alpha = .2) +
   geom_smooth(color = "blue", method = "lm") +
