@@ -79,8 +79,8 @@ nces_state_output <- nces_state %>%
   arrange(fips_st, grade)
 
 #View(nces_state_output)
-write_csv(nces_state_output, "D:/opendata/nces.ed.gov/NCES_state_ethnicity_by_grade.csv")
-write_csv(nces_state_output, "C:/GitHub/r-sandbox01/govt_data/output/NCES_state_ethnicity_by_grade.csv")
+write_csv(nces_state_output, "D:/opendata/nces.ed.gov/NCES_state_ethnicity_by_grade.csv", na = "")
+#write_csv(nces_state_output, "C:/GitHub/r-sandbox01/govt_data/output/NCES_state_ethnicity_by_grade.csv")
 
 #----- NCES District level -----
 nces_lea <- read_csv("D:/opendata/nces.ed.gov/district/2020_2021/ccd_lea_029_2021_w_0b_041321.csv", col_types = cols(.default = col_character()), na = "Not reported")
@@ -111,7 +111,7 @@ nces_lea <- nces_lea %>%
          LowestGrade = GSLO, HighestGrade = GSHI)
          #level = LEVEL, G_PK, G_KG, G_01, G_02, G_03, G_04, G_05, G_06, G_07, G_08, G_09, G_10, G_11, G_12, G_13, G_UG, G_AE)
        
-write_csv(nces_lea, "D:/opendata/nces.ed.gov/NCES_Districts.csv")
+write_csv(nces_lea, "D:/opendata/nces.ed.gov/NCES_Districts.csv", na = "")
 #str(nces_lea)
 #View(nces_lea)
 #nces_lea %>% group_by(state_po, lea_type) %>% count() %>% View()
@@ -149,9 +149,9 @@ nces_school <- nces_school %>%
          LowestGrade = GSLO, HighestGrade = GSHI, 
          Level = LEVEL, G_PK, G_KG, G_01, G_02, G_03, G_04, G_05, G_06, G_07, G_08, G_09, G_10, G_11, G_12, G_13, G_UG, G_AE)
 
-write_csv(nces_school, "D:/opendata/nces.ed.gov/NCES_Schools.csv")
+write_csv(nces_school, "D:/opendata/nces.ed.gov/NCES_Schools.csv", na = "")
 #nces_school %>% filter(state_po == "TN", nces_leaid == "4704530", grepl('wood', school_name)) %>%  head(100) %>% View()
 #nces_school %>% filter(StateAbbrev == "TN", NcesLeaID == "4704530") %>%  head(100) %>% View()
 
-
+?write_csv
 
