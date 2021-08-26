@@ -1,6 +1,7 @@
 library(tidyverse)
 library(stringr)
 
+# election data source: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/42MVDX
 pres <- read_csv("D:/opendata/PresidentialElection1976_2020_state/1976-2020-president.csv")
 pres20 <- pres %>% filter(year == 2020) %>% 
   filter(party_detailed %in% c('DEMOCRAT', 'REPUBLICAN')) %>% 
@@ -11,7 +12,7 @@ pres20 <- pres %>% filter(year == 2020) %>%
 
 states <- read_csv("D:/opendata/FIPS_state_usda.csv")
 
-# vaccine % data source: https://usafacts.org/visualizations/covid-vaccine-tracker-states/
+# vaccine data source: https://usafacts.org/visualizations/covid-vaccine-tracker-states/
 vac <- tibble::tribble(
                      ~state, ~pct_one_dose, ~pct_fully_vac, ~doses_admin,~doses_distrib,~pct_doses_used,
                "Alabama", "48%", "37%",    3963352,    5863220,  "68%",
@@ -79,9 +80,10 @@ final <- pres20 %>% inner_join(states, by = c("state_po" = "state_abbrev")) %>%
   inner_join(vac, by = c("state"))
 
 final %>% 
-  ggplot(aes(x = pct_dem, y = pct_fully_vac)) +
+  ggplot(aes(x = pct_dem, y = pct_fully_vac, label = state_po)) +
   geom_point(size = 2) +
   geom_abline(color = "blue", size = 1) +
+  geom_text(nudge_x = 0.5, nudge_y = 0.2, size = 3, check_overlap = TRUE) +
   #geom_smooth() +
   #scale_x_continuous(limits = c(25, 70)) + 
   scale_y_continuous(limits = c(30, 70)) +
