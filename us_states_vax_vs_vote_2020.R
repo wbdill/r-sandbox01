@@ -1,5 +1,8 @@
+
 library(tidyverse)
 library(stringr)
+
+rm(list = ls())
 
 # election data source: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/42MVDX
 pres <- read_csv("D:/opendata/PresidentialElection1976_2020_state/1976-2020-president.csv")
@@ -82,9 +85,8 @@ final <- pres20 %>% inner_join(states, by = c("state_po" = "state_abbrev")) %>%
 final %>% 
   ggplot(aes(x = pct_dem, y = pct_fully_vac, label = state_po)) +
   geom_point(size = 2) +
-  geom_abline(color = "blue", size = 1) +
+  geom_smooth(method = lm) +
   geom_text(nudge_x = 0.5, nudge_y = 0.2, size = 3, check_overlap = TRUE) +
-  #geom_smooth() +
   #scale_x_continuous(limits = c(25, 70)) + 
   scale_y_continuous(limits = c(30, 70)) +
   labs(title = "US States",
@@ -92,4 +94,125 @@ final %>%
        x = "% of vote for Biden in 2020",
        y = "% of population fully vaccinated",
        caption = "chart: @bdill\nvaccine data: usafacts.org\nelection data: dataverse.harvard.edu")
-warnings()  
+
+#----- usafacts COVID data -----
+state_pop <- read_csv("D:/opendata/census.gov/state_pop_totals_2010_2020/Census_state_pop_nst-est2020.csv")
+covid <- tibble::tribble(
+                              ~state,   ~avc_cases_7d,  ~avg_death_7d, ~cases,    ~deaths,
+                        "Alabama",   3865,  27L,    676795,  12103,
+                         "Alaska",    460,   5L,     81754,    426,
+                        "Arizona",   3099,  22L,    998164,  18661,
+                       "Arkansas",   2015,  32L,    441971,   6806,
+                     "California",  10360,  59L,   4156859,  64744,
+                       "Colorado",   1538,   6L,    608047,   7095,
+                    "Connecticut",    642,   4L,    369920,   8355,
+                       "Delaware",    275,   3L,    117587,   1869,
+           "District of Columbia",    172,   0L,     54366,   1158,
+                        "Florida",  17732, 134L,   3151909,  43632,
+                        "Georgia",   6283,  49L,   1056788,  22492,
+                         "Hawaii",    711,   2L,     58578,    573,
+                          "Idaho",    675,   5L,    217052,   2319,
+                       "Illinois",   3657,  29L,   1503063,  26401,
+                        "Indiana",   3689,  20L,    842501,  14352,
+                           "Iowa",   1016,   6L,    400082,   6268,
+                         "Kansas",   1276,  11L,    362321,   5536,
+                       "Kentucky",   3895,  27L,    557835,   7667,
+                      "Louisiana",   4625,  64L,    676368,  12298,
+                          "Maine",    205,   1L,     74703,    926,
+                       "Maryland",   1076,   7L,    491174,   9929,
+                  "Massachusetts",   1323,   6L,    702877,  18212,
+                       "Michigan",   2047,  13L,   1050153,  21446,
+                      "Minnesota",   1490,   6L,    642288,   7793,
+                    "Mississippi",   3200,  40L,    423599,   8214,
+                       "Missouri",   2350,  34L,    747436,  10409,
+                        "Montana",    433,   4L,    124910,   1781,
+                       "Nebraska",    578,   2L,    240804,   2316,
+                         "Nevada",   1111,  20L,    385272,   6398,
+                  "New Hampshire",    277,   2L,    106726,   1413,
+                     "New Jersey",   2028,   0L,   1081954,  26606,
+                     "New Mexico",    804,   5L,    228558,   4497,
+                       "New York",   3636,  24L,   2231227,  53894,
+                 "North Carolina",   6131,  38L,   1181191,  14272,
+                   "North Dakota",    263,   1L,    116022,   1556,
+                           "Ohio",   3759,  12L,   1197873,  20729,
+                       "Oklahoma",   2113,  19L,    530594,   7812,
+                         "Oregon",   2054,  14L,    265210,   3095,
+                   "Pennsylvania",   3537,  17L,   1284532,  28158,
+                   "Rhode Island",    228,   1L,    160948,   2760,
+                 "South Carolina",   4429,  33L,    707435,  10413,
+                   "South Dakota",    310,   0L,    129866,   2059,
+                      "Tennessee",   6278,  30L,   1013943,  13304,
+                          "Texas",  17125, 161L,   3513718,  54671,
+                           "Utah",   1150,   7L,    458589,   2615,
+                        "Vermont",    120,   1L,     27504,    273,
+                       "Virginia",   2835,  13L,    751132,  11729,
+                     "Washington",   3150,  20L,    546721,   6471,
+                  "West Virginia",    966,   7L,    183372,   3049,
+                      "Wisconsin",   1456,   3L,    724716,   8429,
+                        "Wyoming",    450,   4L,     72995,    835
+           )
+
+vote_covid <-  pres20 %>% inner_join(states, by = c("state_po" = "state_abbrev")) %>% 
+  select(state = state.y, state_po, pct_dem, pct_rep, totalvotes) %>% 
+  inner_join(state_pop, by = c("state" = "State")) %>% 
+  inner_join(covid, by = "state") %>% 
+  select(state, state_po, Population = PopEst2020, cases, deaths, pct_dem, pct_rep, totalvotes ) %>% 
+  mutate(deaths_per_100k = deaths / (Population / 100000),
+         cases_pct = cases / (Population / 100))
+
+ggplot(vote_covid, aes(x = pct_dem, y = deaths_per_100k, label = state_po)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  geom_text(nudge_x = 0.5, nudge_y = 0.2, size = 3, check_overlap = TRUE) +
+  labs(title = "State Deaths vs Vote",
+       x = "% voted Biden 2020",
+       y = "Deaths per 100k",
+       caption = "chart: @bdill\nelection data: dataverse.harvard.edu\nCOVID: usafacts.org")
+
+ggplot(vote_covid, aes(x = pct_dem, y = cases_pct, label = state_po)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  geom_text(nudge_x = 0.5, nudge_y = 0, size = 3, check_overlap = TRUE) +
+  labs(title = "State COVID Cases vs Vote",
+       x = "% voted Biden 2020",
+       y = "COVID Cases % of Population",
+       caption = "chart: @bdill\nelection data: dataverse.harvard.edu\nCOVID: usafacts.org")
+
+#---- CDC COVID data -----
+# https://data.cdc.gov/NCHS/Provisional-COVID-19-Death-Counts-by-Week-Ending-D/r8kw-7aab
+cdc_covid <- read_csv("D:/opendata/CDC/covid_death_counts_by_week_state/Provisional_COVID-19_Death_Counts_by_Week_Ending_Date_and_State.csv")
+cdc_covid <- janitor::clean_names(cdc_covid)
+cdc_covid <- cdc_covid %>% mutate_at(vars(ends_with("date")), lubridate::mdy)
+
+str(cdc_covid)
+
+# some states have lots of missing values
+cdc_covid %>% 
+  filter(end_date > '2021-07-04', group == "By Week") %>% 
+  select(end_date, state, covid_19_deaths) %>% 
+  pivot_wider(names_from = state, values_from = covid_19_deaths) %>% 
+  View()
+
+deaths_since_2021_07 <- cdc_covid %>% 
+  filter(end_date > '2021-07-01', group == "By Week") %>% 
+  group_by(state) %>% 
+  summarize(covid_deaths = sum(covid_19_deaths, na.rm = TRUE)) %>% 
+  filter(covid_deaths > 100)   # < 100 indicative of too many missing values
+
+vote_covid_cdc <-  pres20 %>% inner_join(states, by = c("state_po" = "state_abbrev")) %>% 
+  select(state = state.y, state_po, pct_dem, pct_rep) %>% 
+  inner_join(state_pop, by = c("state" = "State")) %>% 
+  full_join(deaths_since_2021_07, by = "state") %>% 
+  select(state, state_po, Population = PopEst2020, covid_deaths, pct_dem, pct_rep ) %>% 
+  mutate(deaths_per_100k = covid_deaths / (Population / 100000) )
+
+ggplot(vote_covid_cdc, aes(x = pct_dem, y = deaths_per_100k, label = state_po)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  geom_text(nudge_x = 0.5, nudge_y = 0, size = 3, check_overlap = TRUE) +
+  scale_x_continuous(limits = c(32, 66)) +
+  labs(title = "Recent COVID Deaths vs Vote",
+       subtitle = "Deaths 2021-07-04 to 2021-08-21 ",
+       x = "% voted Biden 2020",
+       y = "COVID Deaths per 100K",
+       caption = "chart: @bdill\nCOVID data: CDC\nElection data: dataverse.harvard.edu")
