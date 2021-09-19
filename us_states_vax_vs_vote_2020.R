@@ -194,7 +194,7 @@ cdc_covid %>%
   View()
 
 deaths_since_2021_07 <- cdc_covid %>% 
-  filter(end_date > '2021-07-01', group == "By Week") %>% 
+  filter(end_date > '2021-07-04', group == "By Week") %>% 
   group_by(state) %>% 
   summarize(covid_deaths = sum(covid_19_deaths, na.rm = TRUE)) %>% 
   filter(covid_deaths > 100)   # < 100 indicative of too many missing values
@@ -212,7 +212,7 @@ ggplot(vote_covid_cdc, aes(x = pct_dem, y = deaths_per_100k, label = state_po)) 
   geom_text(nudge_x = 0.5, nudge_y = 0, size = 3, check_overlap = TRUE) +
   scale_x_continuous(limits = c(32, 66)) +
   labs(title = "Recent COVID Deaths vs Vote",
-       subtitle = "Deaths 2021-07-04 to 2021-08-21 ",
+       subtitle = "Deaths from July 4 to Aug 21, 2021",
        x = "% voted Biden 2020",
        y = "COVID Deaths per 100K",
        caption = "chart: @bdill\nCOVID data: CDC\nElection data: dataverse.harvard.edu")

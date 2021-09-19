@@ -4,8 +4,10 @@ library(readxl)
 library(tidyverse)
 library(scales)
 
-d <- read_xlsx("data/TN-Public-Dataset-County-New.XLSX", col_types = c("date", "text", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric"))
-?read_xlsx
+fpath <- "https://www.tn.gov/content/dam/tn/health/documents/cedep/novel-coronavirus/datasets/Public-Dataset-County-New.XLSX"
+fpath <- "C:/Users/bdill/Downloads/Public-Dataset-County-New.XLSX"
+d <- read_xlsx(fpath, col_types = c("date", "text", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric"))
+#?read_xlsx
 
 wmson <- d %>% 
   filter(DATE >= "2020-07-01") %>% 
@@ -44,7 +46,7 @@ wmson %>%
   ggplot(aes(DATE, NEW_CASES)) +
   geom_col(fill = my_blue) +
   geom_line(aes(DATE, NEW_CASES_07da), color = "red", size = 1) +
-  scale_x_datetime(breaks = "1 month", date_labels = "%b") +
+  scale_x_datetime(breaks = "1 month", date_labels = "%b %y") +
   my_labs +
   labs(title = "New Cases")
 
@@ -57,7 +59,7 @@ wmson %>%
   ggplot(aes(DATE, TOTAL_ACTIVE)) +
   geom_col(fill = my_blue) +
   geom_line(aes(DATE, TOTAL_ACTIVE_07da), color = "red", size = 1) +
-  scale_x_datetime(breaks = "1 month", date_labels = "%b") +
+  scale_x_datetime(breaks = "1 month", date_labels = "%b %y") +
   my_labs +
   labs(title = "TOTAL_ACTIVE Cases")
 
@@ -65,14 +67,14 @@ ggsave("output/TN_Williamson_tot_active_cases.png", width = 8, height = 5, dpi =
   
 #----- Positivity -----
 wmson %>% 
-  filter(DATE >= "2020-12-01") %>% 
+  filter(DATE >= "2021-02-01") %>% 
   mutate(test_positivity = NEW_POS_TESTS * 100 / NEW_TESTS,
          test_positivity_07da = zoo::rollmean(test_positivity, k = 7, fill = NA, align = "right")) %>% 
-  View()
+  #View()
   ggplot(aes(DATE, test_positivity)) +
   geom_col(fill = my_blue) +
   geom_line(aes(DATE, test_positivity_07da), color = "red", size = 1) +
-  scale_x_datetime(breaks = "1 month", date_labels = "%b") +
+  scale_x_datetime(breaks = "1 month", date_labels = "%b %y") +
   my_labs +
   labs(title = "New Test Positivity")
   
@@ -117,7 +119,7 @@ state %>%
   ggplot(aes(DATE, NEW_CASES)) +
   geom_col(fill = my_blue) +
   geom_line(aes(DATE, NEW_CASES_07da), color = "red", size = 1) +
-  scale_x_datetime(breaks = "1 month", labels = date_format("%b") ) +
+  scale_x_datetime(breaks = "1 month", labels = date_format("%b %y") ) +
   my_labs +
   labs(title = "New Cases")
 
@@ -125,16 +127,36 @@ ggsave("output/TN_state_new_cases.png", width = 8, height = 5, dpi = 200)
 
 #----- Active CASES -----
 state %>% 
-  filter(DATE >= "2020-09-03") %>% 
+  filter(DATE >= "2020-04-01") %>% 
   mutate(TOTAL_ACTIVE_07da = zoo::rollmean(TOTAL_ACTIVE, k = 7, fill = NA, align = "right")) %>% 
   ggplot(aes(DATE, TOTAL_ACTIVE)) +
   geom_col(fill = my_blue) +
   geom_line(aes(DATE, TOTAL_ACTIVE_07da), color = "red", size = 1) +
-  scale_x_datetime(breaks = "1 month", labels = date_format("%b") ) +
+  geom_vline(xintercept = state$DATE[335], linetype = "solid", color = "#99ff99", size = 15, alpha = 0.5) +
+  annotate("text", x = state$DATE[333], y = 70000, label = "Vaccine readily available", angle = 90) +
+  scale_x_datetime(breaks = "1 month", labels = date_format("%b %y") ) +
   my_labs +
-  labs(title = "TOTAL_ACTIVE Cases")
+  labs(title = "Total Active COVID19 Cases", y = "Total Active Cases", x = "Date")
 ggsave("output/TN_state_tot_active_cases.png", width = 8, height = 5, dpi = 200)  
 
+?annotate
+#----- Total HOSPITALIZED -----
+state %>% 
+  filter(DATE >= "2020-06-03") %>% 
+  mutate(TOTAL_HOSPITALIZED_07da = zoo::rollmean(TOTAL_HOSPITALIZED, k = 7, fill = NA, align = "right")) %>% 
+  ggplot(aes(DATE, TOTAL_HOSPITALIZED)) +
+  geom_col(fill = my_blue) +
+  geom_line(aes(DATE, TOTAL_HOSPITALIZED_07da), color = "red", size = 1) +
+  scale_x_datetime(breaks = "1 month", labels = date_format("%b %y") ) +
+  my_labs +
+  labs(title = "TOTAL_HOSPITALIZED Cases")
+ggsave("output/TN_state_tot_hosp_cases.png", width = 8, height = 5, dpi = 200)  
+
+
+d %>% 
+  filter(DATE >= "2021-08-30", DATE < "2021-09-01") %>% 
+  View()
+str(d)
 
 
 
