@@ -1,0 +1,126 @@
+---
+title: "US Census 2020"
+author: "Brian Dill"
+date: "Last edited: `r format(Sys.time(), '%Y-%m-%d %H:%M')`"
+output: 
+  html_document:
+  toc: true
+  toc_depth: 3
+  toc_float:
+    collapsed: false
+  number_sections: true
+params:
+  country: Turkey
+---
+<style>
+  #TOC {
+  font-size: 16px;
+}
+#header {
+color: #800000;
+  }
+body {
+  color: #708090;
+    font-family: Calibri;
+  background-color: #F5F5F5;
+}
+pre {
+  background-color: #F8F8FF;
+}
+
+</style>
+  ```{r setup, include = FALSE}
+knitr::opts_chunk$set(fig.align = "center", out.width = "80%", echo = TRUE, warning = FALSE)
+```
+
+```{r data, message = FALSE}
+library(tidyverse)
+library(knitr)
+
+#path <- "http://briandill.com/data/census/DECENNIALPL2020.P1/DECENNIALPL2020.P1_data_with_overlays_2021-09-17T080619.csv"
+path <- "C:/Users/bdill/Downloads/DECENNIALPL2020.P1_2021-09-29T004217/DECENNIALPL2020.P1_data_with_overlays_2021-09-17T080619.csv"
+df <- read_csv(path, skip = 2, col_names = FALSE)
+df <- df[,1:11]
+colnames(df) <- c("geoid", "name", "total", "one", "white", "black", "indian", "asian", "pacific", "other", "twoormore")
+df <- separate(df, name, into = c("county", "state"), ", ")
+df <- df %>% mutate(fips_county = substring(geoid, 10),
+                    fips_state = substring(geoid, 10, 11),
+                    white_pct = white*100 / total,
+                    black_pct = black*100 / total,
+                    indian_pct = indian*100 / total,
+                    asian_pct = asian*100 / total,
+                    pacific_pct = pacific*100 / total,
+                    other_pct = other*100 / total,
+                    twoormore_pct = twoormore*100 / total) %>% 
+  select(geoid, fips_state, fips_county, county, state, total, white, black, indian, asian, pacific
+         , other, twoormore, one, white_pct, black_pct, indian_pct, asian_pct, pacific_pct
+         , other_pct, twoormore_pct)
+```
+
+# US Census 2020 
+2020 Decennial Data.  Table P1 (Race)
+
+[https://data.census.gov/cedsci/table?q=race%202020&tid=DECENNIALPL2020.P1](https://data.census.gov/cedsci/table?q=race%202020&tid=DECENNIALPL2020.P1)
+
+## Top 10 Counties Highest % White
+
+```{r message = FALSE}
+df %>% arrange(desc(white_pct)) %>% 
+  select(state, county, total, white, white_pct) %>% 
+  head(10)%>% 
+  kable()
+```
+## Top 10 Counties Highest % Black
+
+```{r message = FALSE}
+df %>% arrange(desc(black_pct)) %>% 
+  select(state, county, total, black, black_pct) %>% 
+  head(10) %>% 
+  kable()
+```
+
+## Top 10 Counties Highest % American Indian or Native Alaskan
+
+```{r message = FALSE}
+df %>% arrange(desc(indian_pct)) %>% 
+  select(state, county, total, indian, indian_pct) %>% 
+  head(10) %>% 
+  kable()
+```
+
+## Top 10 Counties Highest % Asian
+
+```{r message = FALSE}
+df %>% arrange(desc(asian_pct)) %>% 
+  select(state, county, total, asian, asian_pct) %>% 
+  head(10) %>% 
+  kable()
+```
+
+## Top 10 Counties Highest % Native Hawaiian or Pacific Islander
+
+```{r message = FALSE}
+df %>% arrange(desc(pacific_pct)) %>% 
+  select(state, county, total, pacific, pacific_pct) %>% 
+  head(10) %>% 
+  kable()
+```
+
+## Top 10 Counties Highest % Other
+
+```{r message = FALSE}
+df %>% arrange(desc(other_pct)) %>% 
+  select(state, county, total, other, other_pct) %>% 
+  head(10) %>% 
+  kable()
+```
+
+## Top 10 Counties Highest % Two or More Races
+
+```{r message = FALSE}
+df %>% arrange(desc(twoormore_pct)) %>% 
+  select(state, county, total, twoormore, twoormore_pct) %>% 
+  head(10) %>% 
+  kable()
+
+```

@@ -14,6 +14,7 @@ pres20 <- pres %>% filter(year == 2020) %>%
          pct_rep = REPUBLICAN * 100 / totalvotes)
 
 states <- read_csv("D:/opendata/FIPS_state_usda.csv")
+state_pop <- read_csv("D:/opendata/census.gov/state_pop_totals_2010_2020/Census_state_pop_nst-est2020.csv")
 
 # vaccine data source: https://usafacts.org/visualizations/covid-vaccine-tracker-states/
 vac <- tibble::tribble(
@@ -96,7 +97,6 @@ final %>%
        caption = "chart: @bdill\nvaccine data: usafacts.org\nelection data: dataverse.harvard.edu")
 
 #----- usafacts COVID data -----
-state_pop <- read_csv("D:/opendata/census.gov/state_pop_totals_2010_2020/Census_state_pop_nst-est2020.csv")
 covid <- tibble::tribble(
                               ~state,   ~avc_cases_7d,  ~avg_death_7d, ~cases,    ~deaths,
                         "Alabama",   3865,  27L,    676795,  12103,
