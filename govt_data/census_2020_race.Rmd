@@ -14,14 +14,16 @@ params:
   top_n: 10
 ---
 
-  ```{r setup, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(fig.align = "center", out.width = "80%", echo = FALSE, warning = FALSE)
 ```
 
 # US Census 2020 
-2020 Decennial Data.  Table P1 (Race)
 
-[https://data.census.gov/cedsci/table?q=race%202020&tid=DECENNIALPL2020.P1](https://data.census.gov/cedsci/table?q=race%202020&tid=DECENNIALPL2020.P1)
+This report shows the top `r params$top_n` counties by highest percentage of a specific race.  The races in this report are the "alone" versions.  Ex: "White alone", "Black alone", etc.  For more detail, see the [Census Race Definitions](https://www.census.gov/programs-surveys/cps/data/data-tools/cps-table-creator-help/race-definitions.html)
+
+Source data: US Census 2020 Decennial Data. Table P1 (Race) [https://data.census.gov/cedsci/table?q=race%202020&tid=DECENNIALPL2020.P1](https://data.census.gov/cedsci/table?q=race%202020&tid=DECENNIALPL2020.P1)
+
 R markdown file used to create this report on [github](https://github.com/wbdill/r-sandbox01/blob/master/govt_data/census_2020_race.Rmd)
 
 
@@ -73,7 +75,7 @@ df %>% arrange(desc(black_pct)) %>%
   kable()
 ```
 
-## Top `r params$top_n` Counties % American Indian or Native Alaskan
+## Top `r params$top_n` Counties % American Indian or Alaska Native
 
 ```{r message = FALSE}
 df %>% arrange(desc(indian_pct)) %>% 
@@ -91,7 +93,7 @@ df %>% arrange(desc(asian_pct)) %>%
   kable()
 ```
 
-## Top `r params$top_n` Counties % Native Hawaiian or Pacific Islander
+## Top `r params$top_n` Counties % Native Hawaiian or Other Pacific Islander
 
 ```{r message = FALSE}
 df %>% arrange(desc(pacific_pct)) %>% 
