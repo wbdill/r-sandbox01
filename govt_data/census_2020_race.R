@@ -9,15 +9,17 @@ colnames(df) <- c("geoid", "name", "total", "one", "white", "black", "indian", "
 df <- separate(df, name, into = c("county", "state"), ", ")
 df <- df %>% mutate(fips_county = substring(geoid, 10),
                     fips_state = substring(geoid, 10, 11),
-                    white_pct = white*100 / total,
-                    black_pct = black*100 / total,
-                    indian_pct = indian*100 / total,
-                    asian_pct = asian*100 / total,
-                    pacific_pct = pacific*100 / total,
-                    other_pct = other*100 / total,
-                    twoormore_pct = twoormore*100 / total) %>% 
+                    white_pct = round(white*100 / total, 3),
+                    black_pct = round(black*100 / total, 3),
+                    indian_pct = round(indian*100 / total, 3),
+                    asian_pct = round(asian*100 / total, 3),
+                    pacific_pct = round(pacific*100 / total, 3),
+                    other_pct = round(other*100 / total, 3),
+                    twoormore_pct = round(twoormore*100 / total, 3) ) %>% 
   select(geoid, fips_state, fips_county, county, state, total, white, black, indian, asian, pacific, other, twoormore, one,
          white_pct, black_pct, indian_pct, asian_pct, pacific_pct, other_pct, twoormore_pct)
+
+write_csv(df, "D:/opendata/census.gov/DECENNIALPL2020.P1_2021-09-29T004217/census_2020_race_by_county.csv")
 
 df %>% arrange(desc(white_pct)) %>% select(county, state, total, white, white_pct) %>% head(10) #%>% group_by(state) %>% count() %>% arrange(desc(n))
 df %>% arrange(desc(black_pct)) %>% select(county, state, total, black, black_pct) %>% head(10) #%>% group_by(state) %>% count() %>% arrange(desc(n))
