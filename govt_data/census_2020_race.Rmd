@@ -1,16 +1,20 @@
 ---
 title: "US Census 2020"
 author: "Brian Dill"
-date: "Last edited: `r format(Sys.time(), '%Y-%m-%d %H:%M')`"
-output: 
+date: 'Last edited: `r format(Sys.time(), "%Y-%m-%d %H:%M")`'
+output:
+  word_document:
+    toc: yes
+    toc_depth: '3'
   html_document:
-    toc: true
+    toc: yes
     toc_depth: 3
     toc_float:
-      collapsed: false
-    number_sections: false
+      collapsed: no
+    number_sections: no
     css: style_01.css
-params: 
+
+params:
   top_n: 10
 ---
 
