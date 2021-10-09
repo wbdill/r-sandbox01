@@ -69,7 +69,7 @@ dat <- cases %>%
 
 dat %>% #filter(state_po %in% c("HI", "VT", "OR", "ME", "NY", "ND", "RI", "SD", "UT", "TN")) %>% 
   filter(state_po %in% c("TX", "AL", "GA", "MS", "HI", "ND")) %>% 
-  ggplot(aes(x = submission_date, y = tot_cases_per_k, group = state, color = state)) +
+  ggplot(aes(x = submission_date, y = tot_cases_per_k, group = state_po, color = state_po)) +
   geom_line(size = 1.2, alpha = 1) +
   #scale_color_gradient2(low = "#ff0000", high = "#0000ff", mid="#ffddff", midpoint = 50) +
   labs(title = "COVID19 Cases Over Time",

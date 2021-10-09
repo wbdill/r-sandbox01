@@ -1,32 +1,132 @@
 ---
-title: "Test RMarkdown"
+title: "COVID19 in the Southeast"
 author: "Brian Dill"
-date: "9/7/2021"
+date: "10/08/2021"
 output:
-  html_document: default
-  #pdf_document: default
+  html_document: 
+    code_folding: hide
+    toc: yes
+    toc_depth: 3
+    toc_float:
+      collapsed: no
+    number_sections: no
+    css: style_01.css    
+params:
+  state: Tennessee
+  state_abbr: TN
+  counties: !r c("Davidson County","Williamson County", "Rutherford County", "Shelby County", "Wilson County", "Moore County", "Meigs County" )
+
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(knitr)
+library(kableExtra)  #https://haozhu233.github.io/kableExtra/awesome_table_in_html.html
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
 ```
 
-## R Markdown
+## Vaccination Rates by County
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+Data obtained from the CDC can be found on their [COVID-19 Vaccinations in the United States,County](https://data.cdc.gov/Vaccinations/COVID-19-Vaccinations-in-the-United-States-County/8xkx-amqh) page.  It is a large dataset of about 1M rows and 32 columns.  The CSV file is about 130MB.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+This report is filtering to only data from `r params$state` and only selecting 6 columns.
 
-```{r cars}
-summary(cars)
+```{r vax-load, message=FALSE}
+path <- "C:/Users/bdill/Downloads/COVID-19_Vaccinations_in_the_United_States_County_2021-10-05.csv"
+#path <- "http://briandill.com/data/cdc/COVID-19_Vaccinations_in_the_United_States_County_2021-10-05.csv"
+
+vax_raw <- data.table::fread(path)
+vax <- vax_raw %>% 
+  select(Date, FIPS, Recip_County, Recip_State, Series_Complete_Pop_Pct, Series_Complete_Yes) %>% 
+  filter(Recip_State == params$state_abbr)
+
+vax$Date <- lubridate::mdy(vax$Date)
+
+head(vax) %>% kableExtra::kbl() %>% 
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
+## Vaccination Rate Chart
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+This shows the vaccination rate over time for a select number of counties in `r params$state`.  Williamson county was the most vaccinated until they were recently overtaken by Meigs County.  Moore county is included as it is the least vaccinated county.
+
+```{r plot-vax}
+vax %>% 
+  filter(Recip_State == params$state_abbr, Recip_County %in% params$counties ) %>% 
+  select(Date, FIPS, Recip_County, Recip_State, Series_Complete_Pop_Pct, Series_Complete_Yes) %>% 
+  ggplot(aes(x = Date, y = Series_Complete_Pop_Pct, group = Recip_County)) +
+  geom_line(aes(color = Recip_County), size = 1.2) +
+  labs(title = paste("Total Vaccination Rate:", params$state,
+       y = "Percent Fully Vaccinated"),
+       subtitle = "Data: CDC",
+       caption = "chart: @bdill\nData: CDC.  https://bit.ly/3oAMW7l")
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## State Populations
+
+State population totals from the US Census on their [State Population Totals: 2010-2020](https://www.census.gov/programs-surveys/popest/technical-documentation/research/evaluation-estimates/2020-evaluation-estimates/2010s-state-total.html) page.  
+
+The direct [Excel file download link](https://www2.census.gov/programs-surveys/popest/tables/2010-2020/state/totals/nst-est2020.xlsx).  Or you can [download a CSV file](http://briandill.com/data/census/census_state_pop_nst-est2020.csv) directly from my website which is tiny (less than < 10kb)
+
+The population estimate for 2020 for each state is being used.  Florida is the 4th largest US state and by far the largest in the southeast.
+
+```{r state-pop }
+pop <- read_csv("http://briandill.com/data/census/census_state_pop_nst-est2020.csv")
+states <- read_csv("http://briandill.com/data/fips_state_usda.csv")
+
+statepop <- states %>% 
+  inner_join(pop, by = c("state_fips" = "FipsState")) %>% 
+  select(state_fips, state, state_abbrev, pop = PopEst2020)
+
+statepop %>% 
+  filter(state_abbrev %in% c("TN", "MS", "GA", "FL", "AL", "LA")) %>% 
+  arrange(desc(pop)) %>% 
+  kableExtra::kbl() %>% 
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+
+```
+
+## COVID Cases by State Over Time
+
+[CDC source page](https://data.cdc.gov/Case-Surveillance/United-States-COVID-19-Cases-and-Deaths-by-State-o/9mfq-cb36).  The CSV file is about 3MB ([direct download link](https://data.cdc.gov/api/views/9mfq-cb36/rows.csv?accessType=DOWNLOAD))
+
+Note the extremely steep curves beginning in September 2021 (08/21).  This is the onslaught of the delta variant which is about twice as communicable as the original strain.
+
+```{r case-death}
+path <- "http://briandill.com/data/cdc/United_States_COVID-19_Cases_and_Deaths_by_State_over_Time.csv"
+
+case_death <- data.table::fread(path)
+case_death$submission_date <- lubridate::mdy(case_death$submission_date)
+df <- case_death %>% 
+  inner_join(statepop, by = c("state" = "state_abbrev")) %>% 
+  mutate(tot_cases_per_100k = tot_cases / (pop / 100000),
+         tot_deaths_per_100k = tot_death / (pop / 100000)) %>% 
+  select(date = submission_date, state, pop, tot_cases, tot_death, tot_cases_per_100k, tot_deaths_per_100k)
+
+df %>% filter(state %in% c("AL", "TN", "MS", "FL", "GA", "LA")) %>% 
+  ggplot(aes(x = date, y = tot_cases_per_100k)) +
+  geom_line(aes(color = state), size = 1) +
+  scale_x_date(breaks = "2 months", date_labels = "%m/%y") +
+  labs(title = "COVID 19 Cases by State Over Time",
+       x = "Date",
+       y = "Total Cases per 100K",
+       caption = "chart: @bdill\ndata: CDC")
+
+```
+
+## COVID Deaths by State over Time
+
+Using the same dataset and plotting deaths per 100k.  It is notable that while TN had the highest number of cases per 100k, it has the **lowest number of deaths** per 100k.
+
+```{r plot-deaths}
+df %>% filter(state %in% c("AL", "TN", "MS", "FL", "GA", "LA")) %>% 
+  ggplot(aes(x = date, y = tot_deaths_per_100k)) +
+  geom_line(aes(color = state), size = 0.9) +
+  scale_x_date(breaks = "2 months", date_labels = "%m/%y") +
+  labs(title = "COVID 19 Deaths by State Over Time",
+       x = "Date",
+       y = "Total Deaths per 100K",
+       caption = "chart: @bdill\ndata: CDC")
+```
+

@@ -24,3 +24,10 @@ install.packages("formatR", repos = "http://cran.rstudio.com")
 # https://www.rdocumentation.org/packages/astsa/versions/1.8/topics/astsa-package
 install.packages("devtools")     # only need to do this once
 devtools::install_github("nickpoison/astsa")  # time series analysis
+
+
+install.packages("ggThemeAssist") #addin
+install.packages("esquisse") #addin
+install.packages("plotly")  # interactive graphs
+
+install.packages("kableExtra") # extension to knitr's kable https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html

@@ -35,7 +35,6 @@ R markdown file used to create this report on [github](https://github.com/wbdill
 library(tidyverse)
 library(knitr)
 
-#path <- "C:/Users/bdill/Downloads/DECENNIALPL2020.P1_2021-09-29T004217/DECENNIALPL2020.P1_data_with_overlays_2021-09-17T080619.csv"
 path <- "http://briandill.com/data/census/DECENNIALPL2020.P1/DECENNIALPL2020.P1_data_with_overlays_2021-09-17T080619.csv"
 
 df <- read_csv(path, skip = 2, col_names = FALSE)
@@ -68,6 +67,7 @@ df %>% arrange(desc(white_pct)) %>%
   head(params$top_n)%>% 
   kable()
 ```
+
 ## Top `r params$top_n` Counties % Black
 
 Mississippi leads with the top counties with the highest % of black population.  This is the [black belt](https://en.wikipedia.org/wiki/Black_Belt_in_the_American_South)
