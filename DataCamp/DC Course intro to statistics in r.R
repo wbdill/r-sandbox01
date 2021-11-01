@@ -112,6 +112,19 @@ hist(amir_deals$num_users)
 ggplot(amir_deals, aes(x=num_users)) +
   geom_histogram()
 
+sample_means <- replicate(100, sample(amir_deals$num_users, size = 20, replace = TRUE) %>% mean())
+
+#Poisson distribution.  avg = lambda
+ppois(5, lambda = 10)  # prob of getting <=5 given avg=10
+
+# expnential distribution 
+?pexp
+pexp(1, rate = 2) # P(wait < 1min) given rate = 1 every 2 mins
+
+# (Student's) t-distribution - parameter is degrees of freedom
+
+# Log-normal distribution - variables whose log is normally distributed
+
 #----- Ch 4 Correlation and Experimental Design -----
 
 sugar <- readRDS("data/world_happiness_sugar.rds")

@@ -31,3 +31,6 @@ install.packages("esquisse") #addin
 install.packages("plotly")  # interactive graphs
 
 install.packages("kableExtra") # extension to knitr's kable https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html
+
+#https://www.tidyverse.org/blog/2019/05/vroom-1-0-0
+install.packages("vroom")
