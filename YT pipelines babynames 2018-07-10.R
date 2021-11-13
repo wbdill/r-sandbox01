@@ -15,14 +15,14 @@ setwd("C:/GitHub/r-sandbox01")
 #----- graphs of baby names over time -----
 #----- bunch of graphs of baby names over time -----
 ylbl = "Number of Births (thousands)"
-var_name <- "Karen"
+var_name <- "Martha"
 ctitle <- paste("Babies Born Named", var_name)
 
 babynames %>% 
-  filter(name == var_name, sex == "M", year > 1880) %>%
+  filter(name == var_name, sex == "F", year > 1880) %>%
   ggplot(aes(year, n/1000)) + 
   geom_line() +
-  labs(x = "Year", y = ylbl, title = ctitle) +
+  labs(x = "Year", y = ylbl, title = ctitle, caption = "Graph: @bdill\nData: Social Security Administration") +
   scale_x_continuous(breaks = seq(1880, 2020, 10))
 
 

@@ -18,7 +18,7 @@ bn_nat %>% filter(name == "Caitlyn", year == 1970, sex == "F")
 bn_nat %>% filter(name == "Chris", sex == "M") %>% 
   ggplot(aes(x=year, y = n)) + geom_line()
 
-df %>% filter(name == "Barbara", year == 1970, sex == "M") %>% summarize(n = sum(n))
+df %>% filter(name == "Amelia", year == 1970, sex == "M") %>% summarize(n = sum(n))
 
 df %>% filter(name %in% c("Brian", "Christian", "John") & state %in% c("MS", "CO", "TX") & sex == "M" & year > 1930) %>% 
   group_by(year, name, state) %>% summarize (n = sum(n)) %>% 
@@ -44,3 +44,5 @@ df %>%
   geom_line(size = 1.0, alpha = 0.7) +
   #scale_y_log10() +
   facet_wrap(~ state)
+
+
