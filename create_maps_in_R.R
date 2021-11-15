@@ -42,9 +42,9 @@ data_and_map %>% filter(state %in% c("TN")) %>%
   geom_sf(aes(fill = pct_dem, geometry = geometry)) +
   scale_fill_steps2(
     n.breaks = 7,
-    low = muted("red"),
+    low = scales::muted("red"),
     mid = "white",
-    high = muted("blue"),
+    high = scales::muted("blue"),
     midpoint = 50,
     guide = "colorsteps"
   ) +
@@ -62,13 +62,12 @@ tmap_mode("view")
 tmap_save(tmap_last(), "TN_2020_elec.html")  # save off to single html file w/ embedded data.
 getwd()
 
-#===== How to Create Amazing Maps of India with ggmap, Google Maps and RStudio =====
+#===== How to Create Maps of India with ggmap, Google Maps and RStudio =====
 # https://www.youtube.com/watch?v=ItaV0Y6l4ns
-install.packages("ggmap")
+#install.packages("ggmap")
 library(ggmap)
 library(tidyverse)
-
-
+?ggmap
 # manually signed up for a Google maps API: https://mapsplatform.google.com/
 # saved my personal API key in .Renviron
 ggmap::register_google(key = Sys.getenv("GOOGLEMAP_API_KEY"))
@@ -88,3 +87,24 @@ get_map("Tennessee", zoom = 7) %>%
   ggmap() +
   geom_point(data = df, aes(x = long, y = lat), color = df$color, size = df$size)
 ?ggmap
+
+
+#===== DIVA-GIS.org shapefiles =====
+fol_diva <- "D:/opendata/DIVA-GIS/"
+map <- st_read(paste0(fol_diva, "USA_adm/", "USA_adm2.shp"), stringsAsFactors = FALSE)
+roads <- st_read(paste0(fol_diva, "USA_rds/", "USA_roads.shp"), stringsAsFactors = FALSE)
+#map %>% ggplot() + geom_sf(aes(geometry = geometry))
+
+#map %>% filter(NAME_1 %in% c("Tennessee", "Kentucky", "Mississippi", "Alabama", "Georgia")) %>%
+map %>% filter(NAME_1 %in% c("Alabama")) %>% 
+  tm_shape() + 
+  tm_polygons(border.col = "blue", lwd = 2, border.alpha = 0.5) +
+  tm_shape(roads) + 
+  tm_lines(lwd = 0.6, alpha = 0.2)
+
+#roads[1919:45930,] %>%   tm_shape() + tm_lines()
+
+
+
+
+
