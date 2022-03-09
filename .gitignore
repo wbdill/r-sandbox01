@@ -29,3 +29,4 @@ output/
 *.doc
 US_county_census_est_race_eth_2010_2019.csv
 data-edu/data/
+*.html
