@@ -43,7 +43,6 @@ emissions_by_country %>%
 #----- Ch 2 Random Numbers and Probability -----
 amir_deals <- readRDS("data/seller_1.rds")
 
-
 amir_deals %>% 
   count(product) %>% 
   mutate(prob = n / sum(n))
@@ -127,4 +126,37 @@ pexp(1, rate = 2) # P(wait < 1min) given rate = 1 every 2 mins
 
 #----- Ch 4 Correlation and Experimental Design -----
 
-sugar <- readRDS("data/world_happiness_sugar.rds")
+world_happiness <- readRDS("data/world_happiness_sugar.rds")
+# Create a scatterplot of happiness_score vs. life_exp
+ggplot(world_happiness, aes(life_exp, happiness_score)) + geom_point() +
+  geom_smooth(method = "lm", se = F)
+# Correlation between life_exp and happiness_score
+cor(world_happiness$life_exp, world_happiness$happiness_score)
+
+# Scatterplot of gdp_per_cap and life_exp
+ggplot(world_happiness, aes(gdp_per_cap, life_exp)) + geom_point()
+cor(world_happiness$life_exp, world_happiness$gdp_per_cap)
+
+# Scatterplot of happiness_score vs. gdp_per_cap
+ggplot(world_happiness, aes(gdp_per_cap, happiness_score)) + geom_point()
+# Calculate correlation
+cor(world_happiness$happiness_score, world_happiness$gdp_per_cap)
+
+# Create log_gdp_per_cap column
+world_happiness <- world_happiness %>%
+  mutate(log_gdp_per_cap = log(gdp_per_cap))
+# Scatterplot of log_gdp_per_cap vs. happiness_score
+ggplot(world_happiness, aes(log_gdp_per_cap, happiness_score)) +
+  geom_point() + geom_smooth(method = "lm")
+# Calculate correlation
+cor(world_happiness$log_gdp_per_cap, world_happiness$happiness_score)
+
+# Scatterplot of grams_sugar_per_day and happiness_score
+ggplot(world_happiness, aes(grams_sugar_per_day, happiness_score)) + geom_point()
+# Correlation between grams_sugar_per_day and happiness_score
+cor(world_happiness$grams_sugar_per_day, world_happiness$happiness_score)
+
+
+
+
+

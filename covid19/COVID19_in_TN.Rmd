@@ -1,7 +1,7 @@
 ---
 title: "COVID19 in the Southeast"
 author: "Brian Dill"
-date: "10/08/2021"
+date: "01/20/2022"
 output:
   html_document: 
     code_folding: hide
@@ -32,7 +32,8 @@ Data obtained from the CDC can be found on their [COVID-19 Vaccinations in the U
 This report is filtering to only data from `r params$state` and only selecting 6 columns.
 
 ```{r vax-load, message=FALSE}
-path <- "C:/Users/bdill/Downloads/COVID-19_Vaccinations_in_the_United_States_County_2021-10-05.csv"
+#path <- "C:/Users/bdill/Downloads/COVID-19_Vaccinations_in_the_United_States_County_2021-10-05.csv"
+path <- "C:/Users/bdill/Downloads/COVID-19_Vaccinations_in_the_United_States_County.csv"
 #path <- "http://briandill.com/data/cdc/COVID-19_Vaccinations_in_the_United_States_County_2021-10-05.csv"
 
 vax_raw <- data.table::fread(path)

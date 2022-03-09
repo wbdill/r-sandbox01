@@ -4,6 +4,7 @@ library(readxl)
 library(tidyverse)
 library(scales)
 
+# https://www.tn.gov/health/cedep/ncov/data/downloadable-datasets.html
 fpath <- "https://www.tn.gov/content/dam/tn/health/documents/cedep/novel-coronavirus/datasets/Public-Dataset-County-New.XLSX"
 fpath <- "C:/Users/bdill/Downloads/Public-Dataset-County-New.XLSX"
 d <- read_xlsx(fpath, col_types = c("date", "text", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric"))
@@ -24,7 +25,7 @@ state <- d %>%
 
 my_blue <- "#aaaaff"
 my_labs <- labs(title = "TITLE HERE",
-             subtitle = "Williamson County, TN (2020-21)",
+             subtitle = "Williamson County, TN (2020-22)",
              caption = "@bdill Source: https://www.tn.gov/health/cedep/ncov/data/downloadable-datasets.html (County New)")
 
 #----- New TESTS -----
@@ -54,7 +55,8 @@ ggsave("output/TN_Williamson_new_cases.png", width = 8, height = 5, dpi = 200)
 
 #----- Active CASES -----
 wmson %>% 
-  filter(DATE >= "2020-09-03") %>% 
+  #filter(DATE >= "2020-09-03") %>%
+  filter(DATE >= "2022-01-01") %>% 
   mutate(TOTAL_ACTIVE_07da = zoo::rollmean(TOTAL_ACTIVE, k = 7, fill = NA, align = "right")) %>% 
   ggplot(aes(DATE, TOTAL_ACTIVE)) +
   geom_col(fill = my_blue) +
@@ -110,7 +112,7 @@ wmson %>%
 
 
 my_labs <- labs(title = "TITLE HERE",
-                subtitle = "Tennessee (2020-21)",
+                subtitle = "Tennessee (2020-22)",
                 caption = "@bdill Source: https://www.tn.gov/health/cedep/ncov/data/downloadable-datasets.html (County New)")
 #----- New CASES -----
 state %>% 
