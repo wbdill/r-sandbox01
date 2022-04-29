@@ -26,7 +26,7 @@ names(dfnat) <- c("name", "sex", "n", "year")
 
 
 #----- create graphs -----
-names <- c("Kimberly")
+names <- c("Caitlyn", "Catherine")
 p_sex <- "F"
 
 dfnat %>% filter(name %in% names, sex == p_sex) %>% 
