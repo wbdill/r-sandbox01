@@ -44,19 +44,22 @@ largest_group <- county_race_percent %>%
   group_by(NAME) %>% 
   filter(percent == max(percent))
 largest_group %>% arrange(desc(percent)) %>% View()
-
+?get_acs
 #----- State level data -----
 state_race <- get_acs (
   geography = "state" ,
   variables = race_vars,
   summary_var = "B03002_001",
   survey = "acs5",
+  #geometry = TRUE,
+  cache_table = TRUE,
   show_call = "TRUE"
 )
-state_race
+state_race 
+
 state_race_percent <- state_race %>% 
   mutate(percent = 100 * (estimate / summary_est)) %>% 
-  select(GEOID, NAME, variable, percent, estimate, moe, summary_est)
+  select(GEOID, NAME, variable, percent, estimate, moe, summary_est, geometry)
 
 states_fips <- tidycensus::fips_codes %>% select(state_code, state, state_name) %>% distinct()
 state_race_percent2 <- state_race_percent %>% 
@@ -74,7 +77,7 @@ state_race_percent2 <- state_race_percent %>%
 
 library(sf)
 options(scipen=999)
-
+?tigris::states
 #----- State maps -----
 us_states <- tigris::states(cb = TRUE, resolution = "20m")
 us_states_map <- tigris::shift_geometry(us_states)   # Alaska, HI, PR shifted and scaled
@@ -105,21 +108,49 @@ us_county_map <- st_read("D:/opendata/TIGER/tl_2019_us_county.shp") # full US co
 us_counties <- tigris::counties(cb = TRUE, resolution = "20m")
 us_county_map <- tigris::shift_geometry(us_counties)  # Alaska, HI, PR shifted and scaled
 
+var_state <- "TN"
+var_race <- "Black"
 dat <- county_race_percent2 %>% 
-  #filter(state %in% c("TN", "AL", "MS")) %>% 
-  filter(variable == "Hispanic")
+  filter(state == var_state) %>% 
+  filter(variable == var_race)
 
-#dat %>% arrange(desc(percent))
 map_and_data <- inner_join(us_county_map, dat, by = c("GEOID" = "GEOID"))
 
 ggplot(map_and_data) +
   geom_sf(aes(fill = percent)) +
   #scale_fill_gradient(low = "#56B1F7", high = "#132B43") +
   scale_fill_gradient(low = "#99EEBB", high = "#003311") +
-  labs(title = "US Counties",
-       subtitle = "Percent Hispanic",
+  labs(title = paste(var_state, "Counties"),
+       subtitle = paste("Percent",var_race),
        fill = "Percent",
        caption = "@bdill\nData: US Census Bureau ACS 5-year 2019")
+
+MapStateCounties <- function(x) {
+  var_race <- x$race
+  var_state <- x$state_abbrev
+  dat <- county_race_percent2 %>% 
+      filter(state == var_state) %>% 
+      filter(variable == var_race)
+  
+  map_and_data <- inner_join(us_county_map, dat, by = c("GEOID" = "GEOID"))
+  
+  ggplot(map_and_data) +
+    geom_sf(aes(fill = percent)) +
+    scale_fill_gradient(low = "#99EEBB", high = "#003311") +
+    labs(title = paste(var_state, "Counties"),
+         subtitle = paste("Percent",var_race),
+         fill = "Percent",
+         caption = "@bdill\nData: US Census Bureau ACS 5-year 2019")
+  filname <- paste0(var_state, "_", var_race, ".png")
+  ggsave(paste0("D:/tmp/R/maps/", filname), dpi=300)
+}
+
+races <- c("White", "Black", "Native", "Asian", "HIPI", "Hispanic")
+state_abbrevs <- dplyr::pull(states_fips, state)
+state_race <- expand.grid(state_abbrevs, races)
+names(state_race) <- c("state_abbrevs", "races")
+state_race <- state_race %>% filter(state_abbrevs %in% c("MS")) %>% arrange(state_abbrevs, races)
+by(state_race, 1:nrow(state_race), MapStateCounties)
 
 
 #===== mapping with tmap =====
