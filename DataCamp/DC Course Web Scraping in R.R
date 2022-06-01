@@ -54,16 +54,16 @@ str(tbl_clean)
 str(tbl_dirty)
 
 html %>% html_nodes("table")
-html %>% html_nodes("table:first-child")  # :first-child not supported?
-html %>% html_nodes("table:nth-child(2)") # :nth-child(1) not supported?
+html %>% html_nodes("table:first-child")  # :first-child not supported for tables?
+html %>% html_nodes("table:nth-child(2)") # :nth-child(2) not supported for tables?
 html %>% html_nodes("table:last-child") %>% html_table(header=T)
 
-lst <- html %>% html_nodes("table") %>% html_table(header = T)
+lst <- html %>% html_nodes("table") %>% html_table(header = T, fill=T)
 lst[[1]]
 lst[[2]]
 
 
-#----- 2 Navigation and Selection with CSS -----
+#----- 2 Navigation and Selection with CSS ----------------------------------------------------------------------
 languages_raw_html <- "\n<html> \n  <body> \n
 <div>Python is perfect for programming.</div>\n
 <p>Still, R might be better suited for data analysis.</p>\n
@@ -118,8 +118,146 @@ raw <- '<html><body>
   </html>'
 html <- read_html(raw)
 html %>% html_nodes(".first + .second > div, div.second.paragraph > div")  # overly complex
-html %>% html_nodes("div.paragraph, .second.paragraph > div")
 html %>% html_nodes("div div")
-#----- 3 Advanced Selection with XPATH -----
 
-#----- 4 Scraping best practices -----
+#----- 3 Advanced Selection with XPATH ----------------------------------------------------------------------
+
+#  brackets [] are predicates to the selector just before it
+## ex: //div[@class = 'foo'] gets all divs with class of "foo"
+
+html_raw <- "<html><body>
+    <div id = 'first'>
+      <h1 class = 'big'>Berlin Weather Station</h1>
+      <p class = 'first'>Temperature: 20°C</p>
+      <p class = 'second'>Humidity: 45%</p>
+    </div>
+    <div id = 'second'>...</div>
+    <div id = 'third'>
+      <p class = 'first'>Sunshine: 5hrs</p>
+      <p class = 'second'>Precipitation: 0mm</p>
+    </div>
+  </body></html>"
+html <- read_html(html_raw)
+html %>% html_nodes(xpath = "//p")  # all p elements
+html %>% html_nodes(xpath = "//p[@class = 'second']")  # p with class "second"
+html %>% html_nodes(xpath = "//*[@id='third']/p") # Select p elements that are children of "#third"
+html %>% html_nodes(xpath = "//*[@id='third']/p[@class='second']")  # Select p elements with class "second" that are children of "#third"
+
+
+html %>% html_nodes(xpath = "//div")  # all divs
+html %>% html_nodes(xpath = "//div[p]")  # all divs with p descendants
+html %>% html_nodes(xpath = '//div[p [@class="second"]]')    # Select all divs with p descendants having the "second" class
+
+html_raw <- "<div>
+  <h2>Today's rules</h2>
+  <p>Wear a mask</p>
+  <p>Wash your hands</p>
+</div>
+<div>
+  <h2>Tomorrow's rules</h2>
+  <p>Wear a mask</p>
+  <p>Wash your hands</p>
+  <small>Bring hand sanitizer with you</small>
+</div>"
+html <- read_html(html_raw)
+html %>% html_nodes(xpath = "//div/p[position() = 2]") %>% html_text() # Select the text of the second p in every div
+html %>% html_nodes(xpath = "//div/p[position() != 2]") %>% html_text()
+html %>% html_nodes(xpath = "//div[position() = 2]/*[position() >= 2]") # Select the text of the last three nodes of the second div
+html %>% html_nodes(xpath = "")
+
+html_raw <- "<div>
+  <h1>Tomorrow</h1>
+</div>
+<div>
+  <h2>Berlin</h2>
+  <p>Temperature: 20°C</p>
+  <p>Humidity: 50%</p>
+</div>
+<div>
+  <h2>London</h2>
+  <p>Temperature: 15°C</p>
+</div>
+<div>
+  <h2>Zurich</h2>
+  <p>Temperature: 22°C</p>
+  <p>Humidity: 60%</p>
+</div>"
+html <- read_html(html_raw)
+html %>% html_nodes(xpath = "//div[count(h2) = 1 and count(p) >= 2]") # Select only divs with one h2 header and at least two paragraphs
+html %>% html_nodes(xpath = "")
+html %>% html_nodes(xpath = "")
+html %>% html_nodes(xpath = "")
+html %>% html_nodes(xpath = "")
+
+#----- 4 Scraping best practices ----------------------------------------------------------------------
+
+library(httr)
+wikipedia_response <- GET('https://en.wikipedia.org/wiki/Varigotti')  # Get the HTML document from Wikipedia using httr
+status_code(wikipedia_response)  # Check the status code of the response
+wikipedia_page <- content(wikipedia_response)  # Parse the response into an HTML doc
+wikipedia_page %>% 
+  html_nodes(xpath = "//table//tr[position() = 9]/td") %>% 
+  html_text()
+
+
+response = GET("http://foo.com", user_agent("this is @bdill"))  # set user-agent for single call
+set_config(add_headers(`User-Agent` = "This is @bdill")) #<< config User-Agent for the session
+
+
+response <- GET("https://httpbin.org/headers")  # Access https://httpbin.org/headers with httr
+content(response)  # Print its content
+
+# Pass a custom user agent to a GET query to the mentioned URL
+response <- GET("https://httpbin.org/user-agent", user_agent("A request from a DataCamp course on scraping"))
+content(response)  # Print the response content
+
+
+# Globally set the user agent to "A request from a DataCamp course on scraping"
+set_config(add_headers(`User-Agent` = "A request from a DataCamp course on scraping"))
+# Pass a custom user agent to a GET query to the mentioned URL
+response <- GET("https://httpbin.org/user-agent")
+# Print the response content
+content(response)
+
+
+library(httr)
+library(purrr)
+throttled_GET <- slowly(
+  ~ GET(.),
+  rate = rate_delay(3)) 
+
+while(TRUE) {
+  print(Sys.time())
+  response <- throttled_GET("https://wikipedia.org")
+  print(status_code(response))
+}
+
+
+url_list <- c("https://httbin.org/anything/1",
+              "https://httbin.org/anything/2",
+              "https://httbin.org/anything/3")
+for(url in url_list){
+  response <- throttled_GET(url) 
+  print(status_code(response))
+}
+
+
+# ----- final example -----
+library(httr)
+library(purrr)
+mountain_wiki_pages <- c("https://en.wikipedia.org/w/index.php?title=Mount_Everest&oldid=958643874",
+                         "https://en.wikipedia.org/w/index.php?title=K2&oldid=956671989",           
+                         "https://en.wikipedia.org/w/index.php?title=Kangchenjunga&oldid=957008408")
+read_html_delayed <- slowly(~ read_html(.), 
+                            rate = rate_delay(0.5))
+for(page_url in mountain_wiki_pages){
+  html <- read_html_delayed(page_url)
+  peak <- html %>% 
+    html_nodes("#firstHeading") %>% html_text()
+  coords <- html %>% 
+    html_nodes("#coordinates .geo-dms") %>% html_text()
+  print(paste(peak, coords, sep = ": "))
+}
+
+
+
