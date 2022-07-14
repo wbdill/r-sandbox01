@@ -34,3 +34,5 @@ install.packages("kableExtra") # extension to knitr's kable https://cran.r-proje
 
 #https://www.tidyverse.org/blog/2019/05/vroom-1-0-0
 install.packages("vroom")
+
+install.packages("mapview")
