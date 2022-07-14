@@ -53,7 +53,7 @@ by(states, 1:nrow(states), MapStateIncome)
 
 # Build a margin of error plot
 
-hhincome2 %>% filter(state_abbrev == "NJ") %>% 
+hhincome2 %>% filter(state_abbrev == "TN") %>% 
   ggplot(aes(x = estimate, y = reorder(county_clean, estimate))) +
   #ggplot(aes(x = estimate, y = county_clean)) + 
   geom_errorbarh(aes(xmin = estimate - moe, xmax = estimate + moe)) + 
