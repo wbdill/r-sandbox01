@@ -14,8 +14,14 @@ join %>%
   geom_point() +
   geom_smooth(method = lm) +
   geom_text(check_overlap = TRUE, nudge_x = .8, nudge_y = -.8) +
+  #theme_minimal() +
   labs(title = "Maternal Mortality Rate vs % Voted Republican in 2020",
        x = "% voted Republican in 2020",
-       y = "Maternal Mortality Rate",
+       y = "Deaths per 100,000 births",
        caption = "chart: @bdill\ndata: https://worldpopulationreview.com/state-rankings/maternal-mortality-rate-by-state")
+
+mod <- lm(maternalMortalityRate ~ pct_rep, data = join)
+summary(mod)
+
+
 
