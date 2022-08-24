@@ -36,7 +36,7 @@ edu_income <- inner_join(edu, hhincome) %>%
 
 write_csv(edu_income, "D:/R/output/by_state/edu_vs_hhincome/edu_vs_income_data.csv") 
 
-#----- Graphig -----
+#----- Graphing -----
 MapStateEAvsHHI <- function(x) {
   v_state_name <- x$state
   v_state_abbrev <- x$state_abbrev
@@ -56,7 +56,7 @@ MapStateEAvsHHI <- function(x) {
          x = "% of county with bachelor's degree or higher",
          y = "Median Household Income",
          size = "pop (1000)",
-         caption = "@bdill\nUS Census Burear ACS 5-year 2020\nvars: S1501_C02_015, S1901_C02_012")
+         caption = "@bdill\nUS Census Bureau ACS 5-year 2020\nvars: S1501_C02_015, S1901_C02_012")
   
   filename <- paste0("D:/R/output/by_state/edu_vs_hhincome/edu_vs_income_", v_state_abbrev, ".png")
   ggsave(filename = filename, width = 6, height = 4, units = "cm", dpi = 200, scale = 3)
@@ -64,8 +64,11 @@ MapStateEAvsHHI <- function(x) {
 
 by(state_pop, 1:nrow(state_pop), MapStateEAvsHHI)
 
+
+#----- single graph -----
+v_state_name = "TN"
 edu_income %>% 
-  filter(state_abbrev == "TN") %>% 
+  filter(state_abbrev == v_state_name) %>% 
   ggplot(aes(x = pct_bach_up, y = med_hh_income)) +
   geom_point(aes(size = popK), alpha = 0.3) +
   geom_smooth(method = "lm") +
@@ -73,11 +76,11 @@ edu_income %>%
   geom_hline(yintercept = 80069, color = "#77bb33", size = 1.2, alpha = .5) +
   scale_y_continuous(labels = comma) +
   theme_bw() +
-  labs(title = paste0("Education vs Income by County: ", "TN"),
+  labs(title = paste0("Education vs Income by County: ", v_state_name),
        subtitle = "% of county with bachelor's or higher vs median houshold income",
        x = "% of county with bachelor's degree or higher",
        y = "Median Household Income",
        size = "pop (1000)",
-       caption = "@bdill\nUS Census Burear ACS 5-year 2020\nvars: S1501_C02_015, S1901_C02_012")
+       caption = "@bdill\nUS Census Bureau ACS 5-year 2020\nvars: S1501_C02_015, S1901_C02_012")
 
 
