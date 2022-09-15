@@ -7,11 +7,12 @@
 #f <- googlesheets::gs_read("spreadsheets/d/13pWNWf20gSE6BSyktbn-2G4L0PVkoh9bSfIAjVKzlSQ")
 
 # https://docs.google.com/spreadsheets/d/13pWNWf20gSE6BSyktbn-2G4L0PVkoh9bSfIAjVKzlSQ/edit?usp=sharing
-
+# https://pastebin.com/raw/wBWHrq2G
 library(tidyverse)
 library(lubridate)
 rm(list = ls())
-sc <- readxl::read_xlsx("C:/GitHub/r-sandbox01/data/US_SCOTUS_2020-09-30.xlsx")
+#sc <- readxl::read_xlsx("C:/GitHub/r-sandbox01/data/US_SCOTUS_2020-09-30.xlsx")
+sc <- read_csv("https://pastebin.com/raw/wBWHrq2G")
 setwd("C:/GitHub/r-sandbox01/")
 tail(sc)
 str(sc)
@@ -86,15 +87,17 @@ sc %>%
     filter(confirmed > "1900-01-01") %>% 
     ggplot(aes(x = start_date, y = reorder(justice, desc(start_date)), color = nominated_by_party), size = 3) +
     geom_point(size = 3) +
-    geom_point(aes(x = end_date ), shape = 15, size = 3) +
-    geom_segment(aes(x = start_date, xend = coalesce(end_date, today()), yend = justice), size = 1.5) +
+    #geom_point(aes(x = end_date ), shape = 15, size = 3) +
+    geom_point(aes(x = end_date , shape = end_reason ), size = 3) +
+    geom_segment(aes(x = start_date, xend = coalesce(end_date, today()), yend = justice), size = 1.0) +
     scale_color_manual(name = "Nominating Party", values = c("#0000ff", "#ff0000", "#559955", "#995599", "#555599", "#990033", "#ffccaa")) +
     labs(title = "SCOTUS",
-         subtitle = "Confirmations since 1950",
+         subtitle = "Confirmations since 1900",
          x = "Tenure",
          y = "Justice",
+         shape = "End Reason",
          caption = "@bdill Source: https://bit.ly/2ELPivo")
-    ggsave("output/SCOTUS_tenure_since_1950.png", width = 9, height = 6, dpi = 200)
+    ggsave("output/SCOTUS_tenure_since_1900.png", width = 10, height = 7, dpi = 250)
 
 #----- Misc -----
 
