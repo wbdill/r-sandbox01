@@ -13,8 +13,8 @@ bls_cuu %>%
          year_month = as.Date(paste0(year, "-", month, "-01")),
          maxval = max(value)) %>% 
   ggplot(aes(x = year_month, y = value, group = 1)) +
-  geom_point() +
-  geom_line() +
+  geom_point( color = "blue", size = 1) +
+  geom_area( fill = "blue", alpha = 0.4) +
   #  geom_smooth() +
   theme_minimal() +
   #theme(axis.text.x = element_text(angle = 90)) +
