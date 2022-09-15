@@ -1,14 +1,20 @@
+# 2022 Wyoming House Republican Primary results by county
+# Comparing counties
 library(tidyverse)
 library(tidycensus)
 
 #vars <- load_variables(2020, "acs5/subject", cache = TRUE)
+View(vars)
 
 #----- Census educational attainment data ---
 edu <- get_acs(geography = "county",
         state = "WY",
         variables = c(bachelor_up_25_up = "S1501_C01_015",  # bachelor or higher age 25 or higher
                       hs_up_25_up       = "S1501_C01_014",
-                      pop_25_up         = "S1501_C01_006"), # population age 25 or higher
+                      pop_25_up         = "S1501_C01_006",  # population age 25 or higher
+                      ), 
+        
+                
         survey = "acs5",
         year = 2020,
         output = "wide",
@@ -63,16 +69,28 @@ joined <- wy %>%
 
 joined %>% 
   ggplot(aes(x = pct_bach_up, y = pct_cheney, label = county)) +
-  geom_point() +
+  geom_point(aes(size = tot_votes), alpha = 0.5) +
   geom_smooth(method = "lm") +
-  geom_text(check_overlap = TRUE, nudge_x = .8, nudge_y = -.8, size = 3) +
+  geom_text(check_overlap = TRUE, nudge_x = .8, nudge_y = -1.1, size = 3) +
   labs(title = "2022 WY Republican Primary",
        subtitle = "Cheney won Teton and Albany counties",
        x = "% of county (age 25 or up) with a bachelor's degree or higher",
        y = "% of county that voted for Liz Cheney",
+       size = "Total Votes",
        caption = "Chart: @bdill\nEducation Data: US Census Burear ACS 5 year\nElection Data: sos.wyo.gov")
 
+
 write_csv(joined, "C:/users/bdill/Desktop/2022_WY_Republican_primary_data.csv")
+
+joined %>% arrange(desc(tot_votes))
+#--- 
+ggplot(joined, aes(x = pop_25_up, y = pct_bach_up)) +
+  geom_point()
+
+#--- linear model
+
+mod <- lm(pct_cheney ~ pct_bach_up, data = joined)
+summary(mod)
 
 #-----
 wy_long <- pivot_longer(wy,cols = 2:9, names_to = "candidate", values_to = "votes")
@@ -80,10 +98,13 @@ wy_long <- pivot_longer(wy,cols = 2:9, names_to = "candidate", values_to = "vote
 
 # "liz_cheney", "harriet_hageman"
 wy_long %>% 
-  #filter(candidate %in% c("liz_cheney", "harriet_hageman")) %>% 
+  filter(candidate %in% c("liz_cheney", "harriet_hageman")) %>% 
   ggplot(aes(x = county, y = votes, group = candidate, color = candidate)) +
   geom_bar(aes(fill = candidate),position = 'dodge',stat='identity') +
-  theme(axis.text.x = element_text(angle = 90, vjust = .2))
+  theme(axis.text.x = element_text(angle = 90, vjust = .2)) +
+  labs(title = "2022 WY Republican Primary",
+       subtitle = "Cheney won Teton and Albany counties",
+       caption = "Chart: @bdill\nElection Data: sos.wyo.gov")
 
 
 
