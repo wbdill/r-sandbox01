@@ -5,43 +5,55 @@ library(tidycensus)
 #----- State population -----
 state_pop <- read_csv("https://raw.githubusercontent.com/wbdill/r-sandbox01/master/covid19/data/state_populations_2019.csv")
 
-#----- Counties
+#----- Counties -----
 counties <- read_csv("https://pastebin.com/raw/R7VVd55L", skip = 0)
 
-edu <- get_acs(geography = "county",
-               variables = c(  bachelor_up_25_up = "S1501_C01_015"  # bachelor or higher age 25 or higher
-                               , hs_up_25_up       = "S1501_C01_014"
-                               , pop_25_up         = "S1501_C01_006"  # population age 25 or higher
-                               , pct_bach_up       = "S1501_C02_015"
-               ), 
-               survey = "acs5",
-               year = 2020,
-               output = "wide",
-               cache_table = TRUE)
 
-#----- Census medina household income ---
-hhincome <- get_acs(geography = "county",
-                    variables = c(  med_hh_income = "S1901_C02_012"), 
-                    survey = "acs5",
-                    year = 2020,
-                    output = "wide",
-                    cache_table = TRUE)
+#-- tidycensus API calls -----
 
-#----- edu attainment vs median hh income -----
+# S1501_C01_006 Estimate!!Total!!AGE BY EDUCATIONAL ATTAINMENT!!Population 25 years and over
+# S1501_C01_014 Estimate!!Total!!AGE BY EDUCATIONAL ATTAINMENT!!Population 25 years and over!!High school graduate or higher
+# S1501_C01_015 Estimate!!Total!!AGE BY EDUCATIONAL ATTAINMENT!!Population 25 years and over!!Bachelor's degree or higher
+# S1501_C02_015 Estimate!!Percent!!AGE BY EDUCATIONAL ATTAINMENT!!Population 25 years and over!!Bachelor's degree or higher
+
+# S1901_C02_012 Estimate!!Families!!Median income (dollars)
+
+# Census educational attainment
+edu <- get_acs(geography = "county"
+               , variables = c(  bachelor_up_25_up = "S1501_C01_015"  # bachelor or higher age 25 and up
+                               , hs_up_25_up       = "S1501_C01_014"  # high school grad or higher age 25 and up
+                               , pop_25_up         = "S1501_C01_006"  # population age 25 and up
+                               , pct_bach_up       = "S1501_C02_015"  # % pop w/ bachelor's or higher
+                              )              
+               , survey = "acs5"
+               , year = 2020
+               , output = "wide"
+               , cache_table = TRUE)
+
+# Census median household income
+hhincome <- get_acs(geography = "county"
+                    , variables = c(  med_hh_income = "S1901_C02_012")
+                    , survey = "acs5"
+                    , year = 2020
+                    , output = "wide"
+                    , cache_table = TRUE)
+
+#----- edu attainment vs median hh income table joins -----
 edu_income <- inner_join(edu, hhincome) %>% 
   left_join(counties, by = c("GEOID" = "fips_county")) %>% 
   select(GEOID, fips_state, state_abbrev, state, county, NAME, pct_bach_up = pct_bach_upE, med_hh_income = med_hh_incomeE, pop = pop_2020) %>% 
   mutate( popK = (pop / 1000)) %>% 
   arrange(GEOID)
 
+# save to CSV for Google sheet
 write_csv(edu_income, "D:/R/output/by_state/edu_vs_hhincome/edu_vs_income_data.csv") 
 
-#----- Graphing -----
+#----- Graphing function -----
 MapStateEAvsHHI <- function(x) {
+  
   v_state_name <- x$state
   v_state_abbrev <- x$state_abbrev
-  
-  
+
   edu_income %>% 
     filter(state_abbrev == v_state_abbrev) %>% 
     ggplot(aes(x = pct_bach_up, y = med_hh_income)) +
@@ -66,7 +78,7 @@ by(state_pop, 1:nrow(state_pop), MapStateEAvsHHI)
 
 
 #----- single graph -----
-v_state_name = "TN"
+v_state_name = "MI"
 edu_income %>% 
   filter(state_abbrev == v_state_name) %>% 
   ggplot(aes(x = pct_bach_up, y = med_hh_income)) +
