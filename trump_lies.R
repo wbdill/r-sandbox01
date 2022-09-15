@@ -8,10 +8,10 @@ trump_lies <- read_csv("D:/opendata/wapo_trumpclaims_export-012021.csv")
 trump_lies$date <- lubridate::mdy(trump_lies$date)
 
 trump_lies_tally <- trump_lies %>% 
-  group_by(date) %>% arrange(date) %>% tally() # get tally by day
-
-trump_lies_tally <- trump_lies_tally %>% 
-  mutate(total = cumsum(n),                     # get cumulative sum
+  group_by(date) %>% 
+  arrange(date) %>% 
+  tally() %>%                   # get tally by day
+  mutate(total = cumsum(n),     # get cumulative sum
          day_in_office = as.integer(difftime(date, "2017-01-20 00:00:00", units = "days") + 2)) # get # days in office
 
 #write_csv(trump_lies_tally, "D:/opendata/trump_lies_tally.csv")
