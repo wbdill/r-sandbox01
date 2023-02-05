@@ -7,7 +7,7 @@ rm(list = ls())
 #census_api_key("your_key_here", install = TRUE)  # 2) install it to your R environment
 # then you can run tidycensus functions like get_acs()
 # https://walker-data.com/tidycensus/reference/index.html
-?get_acs
+#?get_acs
 
 race_vars <- c(
   White    = "B03002_003",
@@ -45,6 +45,7 @@ largest_group <- county_race_percent %>%
   filter(percent == max(percent))
 largest_group %>% arrange(desc(percent)) %>% View()
 ?get_acs
+
 #----- State level data -----
 state_race <- get_acs (
   geography = "state" ,
