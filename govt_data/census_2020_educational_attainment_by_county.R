@@ -44,9 +44,20 @@ edu_state <- get_acs(geography = "state",
                                , pct_bach_up       = "S1501_C02_015"
                ), 
                survey = "acs5",
-               year = 2020,
+               year = 2021,
                output = "wide",
                cache_table = TRUE)
+?get_acs
+edu_nation <- get_acs(geography = "us",
+                     variables = c(  bachelor_up_25_up = "S1501_C01_015"  # bachelor or higher age 25 or higher
+                                     , hs_up_25_up       = "S1501_C01_014"
+                                     , pop_25_up         = "S1501_C01_006"  # population age 25 or higher
+                                     , pct_bach_up       = "S1501_C02_015"
+                     ), 
+                     survey = "acs5",
+                     year = 2021,
+                     output = "wide",
+                     cache_table = TRUE)
 
 #----- Census medina household income ---
 hhincome <- get_acs(geography = "county",
@@ -72,11 +83,19 @@ joined %>% filter(state_abbrev == "TN") %>% select(pct = pct_bach_upE, county) %
 joined %>% select(pct = pct_bach_upE, state_abbrev, county) %>% arrange(desc(pct)) %>% View()   # nat'l county rankings
 edu_state %>% select(pct = pct_bach_upE, NAME) %>% arrange(desc(pct)) %>% View()  # state rankings
 
+joined %>%# filter(state_abbrev %in% c("TN", "AL", "GA", "FL", "KY", "SC", "NC", "LA", "AR") ) %>% 
+  select(pct = pct_bach_upE, county, state_abbrev) %>% arrange(desc(pct)) %>% 
+  View()
+
 
 #----- map of educational attainment -----
 joined_geo %>% 
-  filter(state_abbrev %in% c("TN", "MS", "KY", "AL", "GA", "SC", "LA", "NC", "AR", "FL") )  %>%
-  #filter(state_abbrev %in% c("AL") )  %>% 
+  #filter(state_abbrev %in% c("TN", "MS", "KY", "AL", "GA", "SC", "LA", "NC", "AR", "FL") )  %>%
+  #filter(state_abbrev %in% c("CA", "NV", "AZ", "NM", "CO", "UT", "WY", "OR", "WA", "ID", "MT") )  %>%
+  #filter(state_abbrev %in% c("WI", "MI", "IL", "OH", "IN") )  %>% 
+  filter(state_abbrev %in% c("VA", "MD", "DE", "DC", NA) )  %>% 
+  #filter(state_abbrev %in% c("TN") )  %>% 
+  #filter(!state_abbrev %in% c("AK", "HI")) %>% 
   ggplot() +
   geom_sf(aes(fill = pct_bach_upE, geometry = geometry)) +
   #theme_void() +

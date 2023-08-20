@@ -31,11 +31,14 @@ medst <- med %>%
 #----- JOINs -----
 join <- med %>% 
   inner_join(states, by = c("State" = "state")) %>% 
-  inner_join(hosp, by = c("state_abbrev" = "state")) %>% 
+  inner_join(hosp2010, by = c("state_abbrev" = "state")) %>% 
   inner_join(pop2, by = "State")
 
 
 join %>% group_by(expanded) %>% count(name = "closures")
+close_by_state <- join %>% group_by(State) %>% 
+  summarize(expanded = max(expanded), closures = n(), pop_mill = max(pop_mill), close_per_mill = closures / pop_mill) 
+write_csv(close_by_state, "D:/R/2023_hospital_closures_by_state.csv")
 
 medst %>% group_by(expanded) %>% summarize(num_states = n(), states = paste(state_abbrev, collapse = ","), pop_mill = sum(pop_mill)) %>% 
   inner_join(join %>% group_by(expanded) %>% count(name = "closures"), by = "expanded") %>% 
@@ -49,7 +52,7 @@ grouped <- join %>% group_by(state_abbrev, expanded, pop_mill) %>%
   mutate(closures_per_mill = closures / pop_mill)
 grouped
  #----- Charts _____
-group.colors <- c(full = "#66cc66", partial = "#BB9900", full_recent ="#CC9999", none = "#CC3333")
+group.colors <- c(full = "#66cc66", partial = "#99DD33", full_recent ="#CC9999", none = "#CC3333")
 
 grouped %>% 
   ggplot(aes(x = reorder(state_abbrev, -closures_per_mill), y = closures_per_mill, group = expanded, fill = expanded)) +
