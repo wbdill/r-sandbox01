@@ -62,21 +62,22 @@ ggplot(maine_income, aes(x = estimate, y = reorder(NAME, estimate))) +
   scale_x_continuous(labels = scales::label_dollar())
 
 #----- 4.4 Visualizing ACS estimates over time -----
-years <- 2005:2019
+#years <- 2005:2019
+years <- c(2005:2019,2021:2022)
 names(years) <- years
 f <- get_acs(
   geography = "county",
   variables = "B25077_001", # median home value
   state = "TN",
   #county = "Williamson",
-  year = 2021,
+  year = 2022,
   survey = "acs1"
 )
 med_home_value <- map_dfr(years, ~{
   get_acs(
     geography = "county",
     variables = "B25077_001", # median home value
-    state = "TN",
+    state = "PA",
     #county = "Williamson",
     year = .x,
     survey = "acs1"
@@ -91,6 +92,8 @@ ggplot(med_home_value, aes(x = year, y = estimate, group = 1)) +
   geom_point()
 
 counties <- c("Williamson", "Davidson", "Shelby", "Rutherford", "Maury")
+counties <- c("Westmoreland", "Butler", "Allegheny", "Summerset", "Lancaster")
+#counties <- c("Barry", "Wayne", "Washtenaw", "Kent", "Allegan", "Muskegon")
 
 med_home_value2 %>% 
   filter(county %in% counties) %>% 
