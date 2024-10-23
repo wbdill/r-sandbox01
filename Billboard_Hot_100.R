@@ -2,6 +2,16 @@ library(tidyverse)
 library(rvest)
 library(lubridate)
 
+#bb100 <- read_csv("D:/opendata/billboard_top_100_charts.csv")  # 18MB 330k rows
+#bb100 <- read_csv("D:/opendata/Billboard_Hot_100_1958_to_2022-09-24.csv")  #334k rows
+bb100 <- read_csv("D:/opendata/BillboardHot100/Billboard_Hot_100_1958_to_2024-07-29.csv")  #334k rows
+bb100 <- janitor::clean_names(bb100)
+bb100$rank <- as.integer(bb100$rank)
+bb100$last_week <- as.integer(bb100$last_week)
+bb100$peak_rank <- as.integer(bb100$peak_rank)
+bb100$weeks_on_board <- as.integer(bb100$weeks_on_board)
+str(bb100)
+
 #----- Web scraper -----
 ScrapeHot100 <- function(date) {
   #date <- "2021-11-20"
@@ -21,7 +31,9 @@ ScrapeHot100 <- function(date) {
   bb100 <<- rbind(bb100, df)  ## double << to reach out to outer scope
 }
 
-date <- "2021-11-27"
+
+#----- Iterate to scrape the latest data
+date <- "2023-08-21"  # set to date of last scrape
 while(date < Sys.Date()) {
 #while(date < "2021-11-21") {
   print(date)
@@ -36,31 +48,33 @@ while(date < Sys.Date()) {
 #bb100 %>% count(date) %>% arrange(desc(date)) %>% View()
 bb100$last_week <- str_replace(bb100$last_week, "-", "")  # replace dashes with empty string
 
-bb100 %>% arrange(date, rank) %>% write_csv("D:/opendata/Billboard_Hot_100_1958_to_2022-09-24_b.csv")
+#bb100 %>% arrange(date, rank) %>% write_csv("D:/opendata/BillboardHot100/Billboard_Hot_100_1958_to_2023-08-21.csv")  #<<- set file name to date of last pull
+bb100 %>% arrange(date, rank) %>% write_csv("D:/opendata/BillboardHot100/Billboard_Hot_100_1958_to_2024-07-29.csv")  #<<- set file name to date of last pull
 
+#bb100 %>% group_by(date) %>% count() %>% View()
 
 #----- Billboard top 100 -----
 # https://www.kaggle.com/datasets/dhruvildave/billboard-the-hot-100-songs/metadata?resource=download
 #devtools::install_github("hoesler/rwantshue")  # https://github.com/hoesler/rwantshue
 
-#bb100 <- read_csv("D:/opendata/billboard_top_100_charts.csv")  # 18MB 330k rows
-bb100 <- read_csv("D:/opendata/Billboard_Hot_100_1958_to_2022-09-24.csv")  #334k rows
-bb100 <- janitor::clean_names(bb100)
-bb100$rank <- as.integer(bb100$rank)
-bb100$last_week <- as.integer(bb100$last_week)
-bb100$peak_rank <- as.integer(bb100$peak_rank)
-bb100$weeks_on_board <- as.integer(bb100$weeks_on_board)
-str(bb100)
 
+#str(bb100)
+
+
+# Top songs based on total points
 bb100_songs <- bb100 %>% 
   mutate(points = (101-rank)) %>% 
   group_by(song, artist) %>% 
   summarize(start = min(date), end = max(date), peak = min(rank), weeks = n(), total_points = sum(points)) %>% 
   mutate(year = substr(start, 1, 4),
          decade = paste0(substr(start, 1, 3), "0")) %>% 
-  arrange(desc(total_points))
-write_csv(bb100_songs, "D:/opendata/Billboard_Hot_100_songs_all_time.csv")
+  arrange(desc(total_points)) %>% 
+  ungroup() %>% 
+  tibble::rowid_to_column("rank")
 
+write_csv(bb100_songs, "D:/opendata/BillboardHot100/Billboard_Hot_100_songs_all_time_2024-07-29.csv")
+
+# Top ARTIST based on total points
 bb100_songs %>% group_by(artist) %>% 
   summarize(tot_points = sum(total_points),
             hits = n(),
@@ -68,9 +82,36 @@ bb100_songs %>% group_by(artist) %>%
   arrange(desc(tot_points)) %>% View()
 
 
+# songs with most weeks in hot100
+bb100_songs %>% arrange(-weeks)
+
+# songs with most weeks in hot100 at #1
+bb100 %>% filter(rank == 1) %>%
+  group_by(song, artist) %>% 
+  summarize(weeks_at_1 = n(), date = min(date)) %>% 
+  ungroup() %>% 
+  arrange(-weeks_at_1) %>% 
+  View()
+
+bb100_songs %>% filter(decade == 1980) %>% arrange(-total_points) %>% View()
+
+bb100 %>% filter(date == "2022-11-05")  # Taylor Swift's domination of top 10
+
+bb100_songs %>% arrange(desc(start)) %>% write_csv("D:/opendata/BillboardHot100/Billboard_100_songs.csv")
+bb100_songs %>% filter(artist == "Madonna") %>% write_csv("D:/opendata/BillboardHot100/Billboard_Madonna.csv")
+
+# top songs for an artist
+bb100_songs %>% filter(artist == "Jelly Roll") %>% arrange(-total_points)
+bb100_songs %>% filter(artist == "The Cars") %>% arrange(-total_points)
+bb100_songs %>% filter(artist == "Van Halen") %>% arrange(-total_points) %>% View()
+bb100_songs %>% filter(artist == "Dua Lipa") %>% arrange(-total_points)
+bb100_songs %>% filter(artist == "Halsey") %>% arrange(-total_points)
+bb100_songs %>% filter(artist == "Bebe Rexha") %>% arrange(-total_points)
+bb100_songs %>% filter(artist == "Taylor Swift") %>% arrange(-total_points) %>% View()
+
 #----- Plot function -----
 PlotArtist <- function(p_artist, max_year = 9999) {
-  #p_artist <- "The Weeknd"
+  #p_artist <- "Madonna"
   #max_year = 9999
   max_date <- as.Date(paste0(max_year, "-01-01"))
   #max_date
@@ -79,7 +120,7 @@ PlotArtist <- function(p_artist, max_year = 9999) {
     filter(artist == p_artist) %>%
     #filter(date >= "1985-01-01" & date < "1986-01-01") %>% 
     group_by(song, artist) %>% 
-    summarize(start = min(date), end = max(date), peak = min(rank), weeks = n()) %>% 
+    summarize(start = min(date), end = max(date), peak = min(rank), weeks = n()) %>%
     arrange(peak, desc(weeks))
 
   n <- nrow(hits)
@@ -106,8 +147,12 @@ PlotArtist <- function(p_artist, max_year = 9999) {
 }
 
 p_artist <- "Ozzy Osbourne"
-p_artist <- "Cher"
-PlotArtist(p_artist = p_artist, max_year = 9999)
+p_artist <- "Alanis Morissette"
+p_artist <- "Taylor Swift"
+p_artist <- "The Beatles" #1972
+p_artist <- "Dua Lipa"
+p_artist <- "The Rolling Stones"
+PlotArtist(p_artist = p_artist, max_year = 2030)
 
 bb100 %>% 
   filter(artist == p_artist) %>%
@@ -116,12 +161,12 @@ bb100 %>%
   group_by(song, artist) %>% 
   summarize(start = min(date), end = max(date), peak = min(rank), weeks = n(), total_points = sum(points)) %>% 
   arrange(desc(total_points), peak, desc(weeks)) %>% 
-  write_csv(paste0("D:/opendata/billboard_", p_artist, ".csv"))
+  write_csv(paste0("D:/opendata/BillboardHot100/billboard_", p_artist, ".csv"))
 
 
 #----- Top 10 each decade -----
 
-top10decade <- read_csv("C:/users/bdill/Downloads/Billboard_Hot_100_Top10.csv")
+top10decade <- read_csv("D:/opendata/BillboardHot100/Billboard_Hot_100_Top10.csv")
 top10decade$decade <- as.factor(top10decade$decade)
 top10decade %>% 
   ggplot(aes(x = decade_rank, y = total_points, group = decade)) +
@@ -137,7 +182,8 @@ top10decade %>%
 
 
 #-----
-bb100 %>% filter(grepl("Lady In", song)) %>% View()
+#bb100 %>% filter(grepl("Lady In", song)) %>% View()
+
 hits <- bb100 %>% 
   filter(song %in% c("Never Gonna Give You Up", "Puttin' On The Ritz", "Mickey", "Don't Worry, Be Happy (From \"Cocktail\")", "Rock Me Amadeus", "The Safety Dance", "Wake Me Up Before You Go-Go", "The Lady In Red", "The Final Countdown", "We Built This City" )  ) %>%
   filter(date >= "1980-01-01" & date < "1990-01-01") %>% 
@@ -150,7 +196,7 @@ cols = rainbow(n, s=.6, v=.9)[sample(1:n,n)]
 
 bb100 %>% 
   inner_join(hits) %>% 
-  filter(date < max_date) %>% 
+  #filter(date < max_date) %>% 
   mutate(song2 = paste0("(", substr(start, 1, 4), ") ", song) ) %>% 
   ggplot(aes(x = date, y = rank, group = song2)) +
   geom_line(aes(color = song2), size = 1.25) +
@@ -166,9 +212,16 @@ bb100 %>%
        caption = "Chart: @bdill\nData: Billboard Hot 100\nhttps://www.billboard.com/charts/hot-100")
 
 #-----
-install.packages("overviewR")
+#install.packages("overviewR")
 
-bb100 %>% filter(artist %in% c("Aerosmith", "The Cars", "Van Halen", "America", "Taylor Swift", "U2", "Cher", "The Weeknd", "Duran Duran", "Elton John", "Phil Collins", "Beyonce", "Mariah Carey")) %>% 
+# Heatmap of Hot100 Songs by year
+bb100 %>% 
+  #filter(artist %in% c("Aerosmith", "The Cars", "Van Halen", "America", "Taylor Swift", "U2", "Cher", "The Weeknd", "Duran Duran", "Michael Jackson", "Phil Collins", "Beyonce", "Mariah Carey", "Tina Turner")) %>%
+  #filter(artist %in% c("The Beatles", "The Rolling Stones", "Led Zeppelin", "Eagles", "Van Halen", "Taylor Swift")) %>%
+  filter(artist %in% c("Drake", "The Weeknd", "Post Malone", "Dua Lipa", "Halsey", "Weeknd", "Taylor Swift", "Ed Sheeran", "Beyonce", "Lady Gaga", "Rihanna", "Katy Perry")) %>%
+  #filter(artist %in% c("Justin Timberlake", "Harry Styles", "Britney Spears", "Taylor Swift", "Imagine Dragons", "The Weeknd")) %>%
+  #filter(artist %in% c("Journey", "Aerosmith", "Michael Jackson", "Taylor Swift", "Creedence Clearwater Revival", "Bruno Mars")) %>%
+  #filter(artist %in% c("Taylor Swift", "Johnny Cash", "Dan & Shay", "Harry Styles", "The Band", "The Beach Boys", "Britney Spears", "Elton John", "Frank Sinatra")) %>% 
   mutate(year = as.integer(substr(date, 1, 4))) %>% 
   overviewR::overview_heat(id = artist, time = year, xaxis = "Year", yaxis = "Artist")
 ?overview_heat
@@ -190,12 +243,11 @@ bb100_songs |> filter(peak == 1) |>
   filter(number_ones > 4) |> 
   arrange(desc(number_ones)) |> 
   View()
-
-bb100_songs |> filter(peak == 1) |> 
+ 
 
 bb100_songs |> filter(peak == 1) |> 
   group_by(artist) |> 
-  summarize(songs = toString(unique(song))) |> 
+  summarize(number = n(), songs = toString(unique(song))) |> 
   View()
 
 test <- mtcars |>
